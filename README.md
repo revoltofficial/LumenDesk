@@ -4,7 +4,7 @@ Original SwiftUI source prototype, version 0.1. The working name is LumenDesk. I
 
 ## Current build status
 
-Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group build passed all 18 tests and local selection/group UI checks; details are recorded in VALIDATION.md. Hardware output remains untested.
+Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group build passed all 18 tests and local selection/group UI checks; details are recorded in VALIDATION.md. The presets/layers build passed all 25 tests and local capture, composition, activation and release checks. Hardware output remains untested.
 
 ## Implemented in source
 

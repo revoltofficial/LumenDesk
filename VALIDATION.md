@@ -45,3 +45,13 @@ Final build 38433123861 compiled commit 14713a5266db1c82310c37032fe2e2604385b1d5
 The delivered app uses local.lumendesk.groups as its bundle identifier so it can open alongside earlier prototypes. It was ad-hoc re-signed locally after this metadata change and passed codesign verification. Native automation did not confirm modifier-key selection; the visible Multi-select toggle is the verified interaction. Fixture movement still affects one fixture at a time. Hardware output remains untested.
 
 Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38433123861
+
+## Presets and layered cues — 2026-10-13
+
+Build 38435473635 compiled commit 87aaa61d551b7502e6cc06e929014cb9e07bf775 successfully. All 25 tests passed, including seven new tests for sparse channels, priority, release, fade endpoints, fixture isolation, effect override/release, manual takeover, Stop, concurrent scene sequences, persistence, legacy files, fixture deletion, and invalid references/values. The initial test build exposed floating-point fade endpoint rounding; completed fades now return exact target values.
+
+Local app checks confirmed capture of a color preset and an intensity preset; layered cue composition and storage; color activation and release restoring the underlying blue scene; and simultaneous color/intensity overlays. With both layers active, Wash 1 showed captured red RGB values at 22% intensity while the other five fixtures remained blue at 70%. Output remained off. The native Save dialog wrote Layered-cues-demo.lumendesk.json, and its JSON contains the two expected preset types and layer definitions. Active playback is intentionally not saved.
+
+The delivered app uses local.lumendesk.layers so it can coexist with earlier prototypes, and was ad-hoc re-signed and verified after that metadata change. Fade-in applies to level channels over the changing underlying look; effects and releases switch immediately. Hardware output and long-duration behavior remain untested.
+
+Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38435473635
