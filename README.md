@@ -95,3 +95,7 @@ The custom-board build passed all 44 tests and local editing/scene/blackout chec
 ## Tempo
 
 Live now includes BPM, Tap Tempo, Sync and a beat indicator. Each effect can follow seconds or a shared beat count; these settings save with the show. Tap Tempo and Sync can also be placed on the custom board. See TEMPO.md.
+
+## Music Autopilot and effect paths
+
+The bottom-left transport contains tempo and experimental microphone Autopilot controls. Local music analysis estimates BPM and responds to energy changes, with Disco/Techno palettes and manual overrides. Live → Effects includes editable movement paths and Pulse, Scanner, Sparkle and Color chase patterns. See AUTOPILOT.md for operation and current limitations.

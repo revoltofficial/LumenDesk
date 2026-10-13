@@ -1,6 +1,6 @@
 # Validation record
 
-Date: 13 October 2026. Current status: Apple Silicon executable built, 49 tests passed and native interface checked; hardware output untested. The initial table below records the earlier local compiler blocker.
+Date: 13 October 2026. Current status: Apple Silicon executable built, 56 tests passed and native interface checked; hardware output untested. The initial table below records the earlier local compiler blocker.
 
 | Check | Result |
 |---|---|
@@ -87,3 +87,11 @@ The downloaded arm64 app was assigned local.lumendesk.liveboard, ad-hoc signed a
 Build 38448046782 compiled commit 186d01492362c65b35e978ffda8ea04c2f590447 successfully and passed all 49 tests. New injected-clock tests cover tap averaging/rapid-tap filtering/gap reset, continuous beat position through BPM changes, Sync, full-cycle sine timing, chase fixture progression, saved tempo and legacy defaults, invalid timing rejection and board tempo actions. Release packaging passed. The downloaded arm64 delivery app was assigned local.lumendesk.tempo, ad-hoc signed and passed strict deep signature verification.
 
 Native checks on macOS 15.6.1 confirmed Live BPM/Tap Tempo/Sync and the changing beat indicator, editing BPM from 120 to 100, opening Effects, separate Seconds/Beats selectors and switching Intensity wave to Beats with a four-beat cycle selector. The file picker automation could not complete loading the separate tempo demo; the demo was generated and its JSON inspected, but native demo-load verification is incomplete. After restarting the app, it was left open with the tempo/effects panel and output off. Hardware output and real-time tapping by native automation remain untested.
+
+## Music Autopilot and movement paths — 2026-10-13
+
+Build 38450532346 compiled f2bad2b2b372e443da8cc9b10d3fd9542d6449f6 on the macOS 26 Apple Silicon runner and passed all 56 tests. New tests cover synthetic 120 BPM detection and silence rejection, quieter-section/strong-return classification, drop brightness and travel compared with breaks, distinct Disco/Techno palettes, stale-audio darkness, Master/Blackout/Stop priority, open-path round-trip continuity, custom-path persistence and validation, waveform boundaries and deterministic bounded output from the new effects. Microphone permission metadata and build-script syntax passed local checks.
+
+The downloaded arm64 app was assigned local.lumendesk.autopilot and a distinct delivery executable/display name to avoid input-routing conflicts with the older running builds. Strict deep ad-hoc signature verification passed. Native checks confirmed bottom-left BPM/Tap/Sync/Autopilot controls visible in Design and Live; the Autopilot panel and disabled lighting switch before listening; synthetic demo activation, a Drop state and roughly 120 BPM estimate; Disco style selection; stopping the demo; opening Effects; opening the path editor; changing a numeric pan offset; adding a point; dragging that point (pan changed to -0.36 and tilt to 0.25); resetting/closing the editor; the expanded effect menu and adding Color chase with palette controls. The Autopilot-effects-demo.lumendesk.json loaded successfully with eight fixtures, custom paths and new effect kinds, restoring 120 BPM with Autopilot off. Output stayed off throughout.
+
+Actual microphone capture, recorded-song tempo/structure accuracy, trained genre recognition and real fixture output are not verified. The current Auto style is a tonal heuristic, not a trained AI classifier. Synthetic tests and demo results do not establish live DJ performance.

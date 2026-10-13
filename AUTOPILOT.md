@@ -2,7 +2,7 @@
 
 BPM, Tap and Sync are always in the bottom-left corner, with Autopilot beneath them. Open Autopilot and choose Listen to microphone. macOS asks for microphone permission on the first use. Select the desired input in macOS Sound settings; this prototype uses the system default input.
 
-Audio stays on the Mac. LumenDesk measures short audio windows in memory, keeps up to 12 seconds of onset features, and neither records files nor uploads audio. Stop listening removes the microphone tap. Opening another show also stops listening. Listening and Autopilot must be started again explicitly each session.
+Audio stays on the Mac. LumenDesk measures short audio windows in memory, keeps up to 12 seconds of onset features, and neither records files nor uploads audio. Stop listening removes the microphone tap. Opening another show also stops listening. Listening and Autopilot must be started again explicitly each session. Tempo-following, style and intensity preferences save with the show.
 
 Follow detected BPM gradually adjusts the shared tempo when the estimate is confident. The initial estimate needs at least five seconds of a steady rhythm. It looks for tempo between about 60 and 176 BPM; half/double-time ambiguity, crowd noise, echoes, vocals and changing tracks can confuse it. Use Tap or a manual BPM when needed, and turn Follow detected BPM off to hold your own setting.
 
@@ -16,4 +16,4 @@ Try demo runs a synthetic 120 BPM rhythm with alternating energetic and quiet se
 
 Live → Effects → Add effect adds Pulse, Scanner, Sparkle and ColorChase alongside the original effects. Wave and Scanner offer sine, triangle, square and ramp shapes. Spread offsets fixtures through the cycle. ColorChase offers Disco and Techno palettes.
 
-The orbit effect now offers Circle, Figure eight, Sweep and Custom paths. Edit path opens draggable points with add/remove/reset and closed-loop controls. Open paths return along the same points without jumping at the loop boundary. Coordinates are relative pan/tilt offsets around the current fixture position; Depth sets the travel distance. Paths and all effect parameters save in the show, including captured effect presets.
+The orbit effect now offers Circle, Figure eight, Sweep and Custom paths. Edit path opens draggable points with add/remove/reset and closed-loop controls, plus numeric pan/tilt offsets for precise edits. Open paths return along the same points without jumping at the loop boundary. Coordinates are relative pan/tilt offsets around the current fixture position; Depth sets the travel distance. Paths and all effect parameters save in the show, including captured effect presets.
