@@ -98,6 +98,10 @@ struct Effect: Identifiable, Codable {
     var rate: Double = 0.5
     var depth: Double = 0.75
     var enabled: Bool = false
+    var beatTiming: Bool? = nil
+    var beatsPerCycle: Double? = nil
+    var cycleBeats: Double { beatsPerCycle ?? 4 }
+    var validTiming: Bool { cycleBeats.isFinite && [0.25, 0.5, 1, 2, 4, 8, 16].contains(cycleBeats) }
 }
 struct ShowProject: Codable {
     var schemaVersion: Int = 1
@@ -113,6 +117,7 @@ struct ShowProject: Codable {
     var layerCues: [LayerCue]? = nil
     var fixtureProfiles: [FixtureProfile]? = nil
     var liveBoard: LiveBoard? = nil
+    var tempo: TempoSettings? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -131,6 +136,7 @@ struct ShowProject: Codable {
         guard Set(profiles.map(\.id)).count == profiles.count, Set(profiles.map(\.id)).isDisjoint(with: Set(FixtureProfile.library.map(\.id))) else { try fail("Duplicate or reserved profile identifiers."); return }
         for profile in profiles { try profile.validate() }
         try liveBoard?.validate()
+        guard (tempo ?? TempoSettings()).valid else { try fail("BPM must be between 30 and 300."); return }
         var occupied = Set<Int>()
         let fixtureIDs = Set(fixtures.map(\.id))
         let groups = fixtureGroups ?? []
@@ -164,14 +170,14 @@ struct ShowProject: Codable {
                 guard values.channels.allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { try fail("Invalid preset levels."); return }
             }
             for effect in preset.effects ?? [] {
-                guard effect.rate.isFinite, (0...20).contains(effect.rate), effect.depth.isFinite, (0...1).contains(effect.depth) else { try fail("Invalid preset effect."); return }
+                guard effect.validTiming, effect.rate.isFinite, (0...20).contains(effect.rate), effect.depth.isFinite, (0...1).contains(effect.depth) else { try fail("Invalid preset effect."); return }
             }
         }
         for layer in layers {
             guard !layer.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !layer.presetIDs.isEmpty, Set(layer.presetIDs).count == layer.presetIDs.count, Set(layer.presetIDs).isSubset(of: Set(presets.map(\.id))), (0...100).contains(layer.priority), layer.fadeSeconds.isFinite, (0...3600).contains(layer.fadeSeconds) else { try fail("Invalid layered cue or preset references."); return }
         }
         for effect in effects {
-            guard effect.rate.isFinite, (0...20).contains(effect.rate), effect.depth.isFinite, (0...1).contains(effect.depth) else { try fail("Invalid effect settings."); return }
+            guard effect.validTiming, effect.rate.isFinite, (0...20).contains(effect.rate), effect.depth.isFinite, (0...1).contains(effect.depth) else { try fail("Invalid effect settings."); return }
         }
     }
 }

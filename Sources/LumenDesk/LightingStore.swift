@@ -82,6 +82,7 @@ import UniformTypeIdentifiers
     @Published var outputEnabled = false
     @Published var errorMessage: String?
     @Published var phase: Double = 0
+    @Published var tempoClock = TempoClock()
     @Published var fixtureStates: [UUID: FixtureState] = [:]
     @Published private(set) var sequencePlayer: SequencePlayer?
     private var sequenceCues: [UUID: Cue] = [:]
@@ -344,8 +345,11 @@ import UniformTypeIdentifiers
         sequenceCues = [:]
         sequencePausedAt = nil
     }
+    func tempoNow() -> TimeInterval { clock() }
+    func resetTempoTick() { lastTick = clock() }
     func tick() {
         let now = clock()
+        tempoClock.advance(seconds: max(0, now - lastTick), bpm: bpm)
         phase += min(0.25, max(0, now - lastTick))
         lastTick = now
         if let start = fadeStart, sequencePlayer?.isPaused != true {
@@ -380,7 +384,8 @@ import UniformTypeIdentifiers
         let index = project.fixtures.firstIndex(where: { $0.id == id }) ?? 0
         let count = max(1, project.fixtures.count)
         for effect in layerMixer.effects(for: id, base: project.effects) where effect.enabled && effect.rate.isFinite && effect.depth.isFinite {
-            let position = phase * max(0, effect.rate) + Double(index) / Double(count)
+            let cycles = effect.beatTiming == true ? tempoClock.beats / max(0.25, effect.cycleBeats) : phase * max(0, effect.rate)
+            let position = cycles + Double(index) / Double(count)
             let depth = min(1, max(0, effect.depth))
             switch effect.kind {
             case .circle:
@@ -390,7 +395,7 @@ import UniformTypeIdentifiers
                 }
             case .sine: result.dimmer *= 1 - depth + depth * (sin(position * 2 * .pi) + 1) / 2
             case .chase:
-                let step = Int((phase * max(0, effect.rate)).truncatingRemainder(dividingBy: Double(count)))
+                let step = Int((cycles * (effect.beatTiming == true ? Double(count) : 1)).truncatingRemainder(dividingBy: Double(count)))
                 result.dimmer *= index == step ? 1 : 1 - depth
             case .rainbow:
                 let hue = position - floor(position)
@@ -457,6 +462,7 @@ import UniformTypeIdentifiers
             cancelSequence()
             releaseAllLayers()
             project = next
+            syncTempo(); tempoClock.resetTaps()
             fadeStart = nil
             activeCueID = nil
             fixtureStates = Dictionary(uniqueKeysWithValues: next.fixtures.map { ($0.id, FixtureState.off) })

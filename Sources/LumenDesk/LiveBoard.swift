@@ -1,6 +1,8 @@
 import SwiftUI
 
-enum BoardAction: String, Codable, CaseIterable { case cue, layer, effect, blackout, stop, text }
+enum BoardAction: String, Codable, CaseIterable { case cue, layer, effect, blackout, stop, tapTempo, syncTempo, text
+    var title: String { self == .tapTempo ? "Tap Tempo" : self == .syncTempo ? "Sync Tempo" : rawValue.capitalized }
+}
 enum BoardBehavior: String, Codable, CaseIterable { case trigger, toggle, momentary }
 struct BoardControl: Identifiable, Codable {
     var id = UUID()
@@ -42,6 +44,8 @@ extension LightingStore {
         case .effect: if let i = project.effects.firstIndex(where: { $0.id == c.targetID }) { project.effects[i].enabled = c.behavior == .toggle ? !project.effects[i].enabled : true }
         case .blackout: blackout.toggle()
         case .stop: stop()
+        case .tapTempo: tapTempo()
+        case .syncTempo: syncTempo()
         case .text: break
         }
     }
@@ -136,7 +140,7 @@ struct LiveBoardView: View {
                 TextField("Label", text: binding(i, \.label)).textFieldStyle(.roundedBorder)
                 Picker("Action", selection: Binding(get: { controls[i].action }, set: { a in
                     store.project.liveBoard?.controls[i].action = a; store.project.liveBoard?.controls[i].targetID = nil; store.project.liveBoard?.controls[i].behavior = .trigger
-                })) { ForEach(BoardAction.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) } }
+                })) { ForEach(BoardAction.allCases, id: \.self) { Text($0.title).tag($0) } }
                 Picker("Target", selection: binding(i, \.targetID)) {
                     Text("Choose…").tag(nil as UUID?)
                     if controls[i].action == .cue { ForEach(store.project.cues) { Text($0.name).tag(Optional($0.id)) } }

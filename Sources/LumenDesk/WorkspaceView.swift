@@ -33,7 +33,7 @@ struct WorkspaceView: View {
                         else { designControls.frame(height: 230) }
                     }
                     else if mode == "Presets" { PresetWorkspace().frame(height: 230) }
-                    else { liveControls.frame(height: 230) }
+                    else { liveControls.frame(height: 300) }
                 }
                 Divider()
                 palette.frame(width: 270)
@@ -336,6 +336,7 @@ struct WorkspaceView: View {
                 Spacer()
                 Toggle("Effects", isOn: $showEffects).toggleStyle(.button)
             }
+            TempoControls()
             HStack(spacing: 12) {
                 Button(action: store.startSequence) { Label(store.sequencePlayer == nil ? "Run sequence" : "Restart", systemImage: "play.circle") }
                     .disabled(store.project.cues.isEmpty)
@@ -411,7 +412,15 @@ struct WorkspaceView: View {
                         }
                         context.stroke(curve, with: .color(accent), lineWidth: 2)
                     }.frame(width: 80, height: 30).help("Pattern preview")
-                    VStack { Text("\(effect.rate, specifier: "%.2f") Hz").font(.caption); Slider(value: $effect.rate, in: 0.05...4) }
+                    VStack {
+                        Picker("Timing", selection: Binding(get: { effect.beatTiming ?? false }, set: { effect.beatTiming = $0 })) { Text("Seconds").tag(false); Text("Beats").tag(true) }.pickerStyle(.segmented)
+                        if effect.beatTiming == true {
+                            Picker("Beats per cycle", selection: Binding(get: { effect.cycleBeats }, set: { effect.beatsPerCycle = $0 })) { ForEach([0.25, 0.5, 1, 2, 4, 8, 16], id: \.self) { Text("\($0.formatted()) beats").tag($0) } }
+                        } else {
+                            Text("\((1 / max(0.05, effect.rate)), specifier: "%.2f") s per \(effect.kind == .chase ? "step" : "cycle")").font(.caption)
+                            Slider(value: $effect.rate, in: 0.05...4)
+                        }
+                    }
                     VStack { Text("Depth \(Int(effect.depth * 100))%").font(.caption); Slider(value: $effect.depth, in: 0...1) }
                 }.padding(10).background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 8))
             }
