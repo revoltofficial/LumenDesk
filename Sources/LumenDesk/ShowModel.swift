@@ -112,6 +112,7 @@ struct ShowProject: Codable {
     var presets: [LookPreset]? = nil
     var layerCues: [LayerCue]? = nil
     var fixtureProfiles: [FixtureProfile]? = nil
+    var liveBoard: LiveBoard? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -129,6 +130,7 @@ struct ShowProject: Codable {
         let profiles = fixtureProfiles ?? []
         guard Set(profiles.map(\.id)).count == profiles.count, Set(profiles.map(\.id)).isDisjoint(with: Set(FixtureProfile.library.map(\.id))) else { try fail("Duplicate or reserved profile identifiers."); return }
         for profile in profiles { try profile.validate() }
+        try liveBoard?.validate()
         var occupied = Set<Int>()
         let fixtureIDs = Set(fixtures.map(\.id))
         let groups = fixtureGroups ?? []

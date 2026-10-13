@@ -1,0 +1,76 @@
+{
+  "id": "ngear.move.wash7.9ch.provisional",
+  "name": "N-GEAR MOVE WASH LIGHT 7 \u00b7 9ch \u00b7 provisional",
+  "footprint": 9,
+  "channels": [
+    {
+      "attribute": "pan",
+      "offset": 1,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "tilt",
+      "offset": 2,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "dimmer",
+      "offset": 3,
+      "minimum": 0,
+      "maximum": 134,
+      "constant": 0
+    },
+    {
+      "attribute": "red",
+      "offset": 4,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "green",
+      "offset": 5,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "blue",
+      "offset": 6,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "white",
+      "offset": 7,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "constant",
+      "offset": 8,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "constant",
+      "offset": 9,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    }
+  ],
+  "panDegrees": 540,
+  "tiltDegrees": 270,
+  "minimumBeamDegrees": 25,
+  "maximumBeamDegrees": 25,
+  "gobos": [],
+  "colorUsesDimmer": false
+}

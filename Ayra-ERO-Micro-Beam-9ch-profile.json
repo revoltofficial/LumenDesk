@@ -1,0 +1,76 @@
+{
+  "id": "ayra.ero.microbeam.9ch.provisional",
+  "name": "Ayra ERO Micro Beam FX \u00b7 9ch \u00b7 provisional",
+  "footprint": 9,
+  "channels": [
+    {
+      "attribute": "dimmer",
+      "offset": 1,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "constant",
+      "offset": 2,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "pan",
+      "offset": 3,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "tilt",
+      "offset": 4,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "constant",
+      "offset": 5,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 255
+    },
+    {
+      "attribute": "red",
+      "offset": 6,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "green",
+      "offset": 7,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "blue",
+      "offset": 8,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "white",
+      "offset": 9,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    }
+  ],
+  "panDegrees": 540,
+  "tiltDegrees": 270,
+  "minimumBeamDegrees": 4,
+  "maximumBeamDegrees": 4,
+  "gobos": [],
+  "colorUsesDimmer": false
+}

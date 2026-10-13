@@ -331,7 +331,7 @@ struct WorkspaceView: View {
     private var liveControls: some View {
         VStack(spacing: 10) {
             HStack {
-                Picker("Live layout", selection: $liveStyle) { Text("Buttons").tag("Buttons"); Text("Cue list").tag("Cue list") }.pickerStyle(.segmented).frame(width: 180)
+                Picker("Live layout", selection: $liveStyle) { Text("Board").tag("Board"); Text("Buttons").tag("Buttons"); Text("Cue list").tag("Cue list") }.pickerStyle(.segmented).frame(width: 260)
                 Spacer()
                 Toggle("Effects", isOn: $showEffects).toggleStyle(.button)
             }
@@ -354,6 +354,7 @@ struct WorkspaceView: View {
             }.font(.caption).help("Each cue fades, then holds. Timing edits apply on the next run. Pause freezes cue fades; global effects continue.")
             ScrollView {
                 if showEffects { effectsPanel }
+                else if liveStyle == "Board" { LiveBoardView() }
                 else if liveStyle == "Buttons" {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 10) {
                         ForEach(store.project.cues) { cue in
