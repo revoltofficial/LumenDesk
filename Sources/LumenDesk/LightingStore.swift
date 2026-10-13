@@ -299,11 +299,15 @@ import UniformTypeIdentifiers
         if selectedCueID == id { selectedCueID = project.cues.first?.id }
     }
     func stop() {
+        let parked = Dictionary(uniqueKeysWithValues: project.fixtures.map { fixture in
+            var value = renderedState(for: fixture.id); value.dimmer = 0
+            return (fixture.id, value)
+        })
         releaseAllLayers()
         cancelSequence()
         fadeStart = nil
         activeCueID = nil
-        fixtureStates = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, FixtureState.off) })
+        fixtureStates = parked
         for index in project.effects.indices { project.effects[index].enabled = false }
     }
     var sequenceRemaining: Double {

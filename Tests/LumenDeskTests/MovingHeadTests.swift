@@ -101,6 +101,20 @@ final class MovingHeadTests: XCTestCase {
         store.project.fixtures[1].address = 502
         XCTAssertNoThrow(try store.project.validate())
     }
+    @MainActor func testStopParksRenderedHeadPositionInsteadOfSnappingToCenter() {
+        let store = LightingStore(startTimer: false)
+        store.project = ShowProject(); store.addFixture(profile: .head)
+        let id = store.project.fixtures[0].id
+        store.setState(id: id, state: FixtureState(dimmer: 1, pan: 0.7, tilt: 0.65, zoom: 0.8))
+        store.project.effects = [Effect(name: "Orbit", kind: .circle, enabled: true)]
+        store.phase = 0.25
+        let before = store.renderedState(for: id)
+        store.stop()
+        let after = store.renderedState(for: id)
+        XCTAssertEqual(after.pan, before.pan); XCTAssertEqual(after.tilt, before.tilt)
+        XCTAssertEqual(after.zoom, before.zoom); XCTAssertEqual(after.dimmer, 0)
+        XCTAssertTrue(store.project.effects.allSatisfy { !$0.enabled })
+    }
     @MainActor func testPatchingAHeadAddsMovementControlToLegacyShowsOnce() {
         let store = LightingStore(startTimer: false)
         store.project.effects.removeAll { $0.kind == .circle }
