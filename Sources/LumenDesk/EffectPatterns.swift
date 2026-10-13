@@ -84,6 +84,11 @@ struct MovementPathEditor: View {
     @Environment(\.dismiss) var dismiss
     @State private var selected = 0
     private var points: [MotionPoint] { effect.pathPoints ?? MotionPath.defaults }
+    private func coordinate(_ key: WritableKeyPath<MotionPoint, Double>) -> Binding<Double> {
+        Binding(get: { points[min(selected,points.count-1)][keyPath: key] },set: { value in
+            guard value.isFinite else { return }; var copy = points; copy[min(selected,copy.count-1)][keyPath: key] = min(1,max(-1,value)); effect.pathPoints = copy; effect.movement = .custom
+        })
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack { Text("Movement path").font(.title2); Spacer(); Button("Done") { dismiss() } }
@@ -114,6 +119,11 @@ struct MovementPathEditor: View {
                 Button("Remove selected") { var copy = points; copy.remove(at: min(selected,copy.count-1)); effect.pathPoints = copy; selected = max(0,selected-1); effect.movement = .custom }.disabled(points.count <= 2)
                 Toggle("Closed loop",isOn: Binding(get: { effect.pathClosed ?? true },set: { effect.pathClosed = $0 }))
                 Button("Reset") { effect.pathPoints = MotionPath.defaults; effect.movement = .custom }
+            }
+            HStack {
+                Text("Selected point \(selected + 1)")
+                TextField("Pan offset", value: coordinate(\.x), format: .number.precision(.fractionLength(2))).frame(width: 100)
+                TextField("Tilt offset", value: coordinate(\.y), format: .number.precision(.fractionLength(2))).frame(width: 100)
             }
             Text("Pan ↔ · Tilt ↕ · Open paths travel back and forth").font(.caption).foregroundStyle(.secondary)
         }.padding(22).onAppear { effect.movement = .custom; if effect.pathPoints == nil { effect.pathPoints = MotionPath.defaults } }

@@ -92,9 +92,18 @@ import UniformTypeIdentifiers
     @Published var listening = false
     @Published var audioDemo = false
     @Published var autopilotEnabled = false
-    @Published var automaticTempo = true
-    @Published var musicStyle = MusicStyle.auto
-    @Published var autopilotStrength = 0.65
+    var automaticTempo: Bool {
+        get { (project.autopilot ?? AutopilotPreferences()).followTempo }
+        set { var p = project.autopilot ?? AutopilotPreferences(); p.followTempo = newValue; project.autopilot = p }
+    }
+    var musicStyle: MusicStyle {
+        get { (project.autopilot ?? AutopilotPreferences()).style }
+        set { var p = project.autopilot ?? AutopilotPreferences(); p.style = newValue; project.autopilot = p }
+    }
+    var autopilotStrength: Double {
+        get { (project.autopilot ?? AutopilotPreferences()).strength }
+        set { var p = project.autopilot ?? AutopilotPreferences(); p.strength = newValue; project.autopilot = p }
+    }
     @Published var microphoneStatus = "Microphone off"
     var microphone: MicrophoneListener?
     var musicAnalyzer = MusicAnalyzer()
@@ -421,7 +430,7 @@ import UniformTypeIdentifiers
                 let random = seed - floor(seed)
                 result.dimmer *= random > 0.7 ? 1 : 1 - depth
             case .scanner:
-                let target = (effect.waveform ?? .triangle).value(at: cycles) * Double(max(1, count - 1))
+                let target = (effect.waveform ?? .triangle).value(at: cycles) * Double(max(0, count - 1))
                 result.dimmer *= 1 - depth + depth * max(0, 1 - abs(Double(index) - target))
             case .chase:
                 let step = Int((cycles * (effect.beatTiming == true ? Double(count) : 1)).truncatingRemainder(dividingBy: Double(count)))

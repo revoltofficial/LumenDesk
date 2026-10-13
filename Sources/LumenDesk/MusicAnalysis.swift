@@ -1,7 +1,13 @@
 import Foundation
 
-enum MusicStyle: String, CaseIterable { case auto, disco, techno
+enum MusicStyle: String, Codable, CaseIterable { case auto, disco, techno
     var title: String { rawValue.capitalized }
+}
+struct AutopilotPreferences: Codable {
+    var followTempo = true
+    var style = MusicStyle.auto
+    var strength = 0.65
+    var valid: Bool { strength.isFinite && (0...1).contains(strength) }
 }
 enum MusicSection: String { case waiting = "Waiting", groove = "Groove", build = "Build", drop = "Drop", musicalBreak = "Break", silence = "Silence" }
 struct MusicSnapshot {
@@ -11,12 +17,15 @@ struct MusicSnapshot {
     var energy = 0.0
     var bpm: Double? = nil
     var confidence = 0.0
+    var beat = false
     var section = MusicSection.waiting
 }
 struct MusicAnalyzer {
     private var envelopes: [(time: Double, onset: Double)] = []
     private var lastTime: Double? = nil
     private var previous = 0.0
+    private var lastOnset = -Double.infinity
+    private var tonalBrightness = 0.0
     private var average = 0.0
     private var fast = 0.0
     private var quietSince: Double? = nil
@@ -31,6 +40,9 @@ struct MusicAnalyzer {
         fast += (rms-fast) * min(1,dt*5)
         average += (rms-average) * min(1,dt*0.2)
         let onset = max(0,rms-previous); previous = rms
+        let beat = onset > max(0.004,average*0.4) && time-lastOnset > 0.25
+        if beat { lastOnset = time }
+        tonalBrightness += (min(1,max(0,high/max(0.001,rms)))-tonalBrightness)*min(1,dt*0.5)
         // Resample amplitude onsets to 50 Hz so device buffer size cannot bias BPM.
         if let last = envelopes.last, time - last.time < 0.019 {
             envelopes[envelopes.count-1].onset = max(last.onset,onset)
@@ -55,7 +67,7 @@ struct MusicAnalyzer {
         else if average > 0.015 && fast > average*1.5 { section = .build }
         else { section = .groove }
         let energy = min(1,max(0,fast / max(0.025,average*2)))
-        return MusicSnapshot(level: rms,bass: min(1,max(0,bass / max(0.001,rms))),brightness: min(1,max(0,high / max(0.001,rms))),energy: energy,bpm: estimate,confidence: confidence,section: section)
+        return MusicSnapshot(level: rms,bass: min(1,max(0,bass / max(0.001,rms))),brightness: tonalBrightness,energy: energy,bpm: estimate,confidence: confidence,beat: beat,section: section)
     }
     private func tempoEstimate() -> (bpm: Double?, confidence: Double) {
         guard let first = envelopes.first, let last = envelopes.last, last.time-first.time >= 5 else { return (nil,0) }

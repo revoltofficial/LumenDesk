@@ -10,6 +10,10 @@ struct TempoClock {
         guard seconds.isFinite, seconds >= 0, bpm.isFinite, (30...300).contains(bpm) else { return }
         beats += seconds * bpm / 60
     }
+    mutating func alignBeat() {
+        let correction = beats.rounded()-beats
+        if abs(correction) < 0.25 { beats += correction*0.4 }
+    }
     mutating func sync() { beats = 0 }
     mutating func resetTaps() { taps = [] }
     mutating func tap(at now: TimeInterval) -> Double? {

@@ -89,7 +89,7 @@ struct SequenceSettings: Codable {
 enum EffectKind: String, Codable, CaseIterable, Identifiable {
     case sine, chase, rainbow, circle, pulse, scanner, sparkle, colorChase
     var id: String { rawValue }
-    var title: String { rawValue.capitalized }
+    var title: String { self == .colorChase ? "Color chase" : self == .circle ? "Movement" : rawValue.capitalized }
 }
 struct Effect: Identifiable, Codable {
     var id = UUID()
@@ -129,6 +129,7 @@ struct ShowProject: Codable {
     var fixtureProfiles: [FixtureProfile]? = nil
     var liveBoard: LiveBoard? = nil
     var tempo: TempoSettings? = nil
+    var autopilot: AutopilotPreferences? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -147,6 +148,7 @@ struct ShowProject: Codable {
         guard Set(profiles.map(\.id)).count == profiles.count, Set(profiles.map(\.id)).isDisjoint(with: Set(FixtureProfile.library.map(\.id))) else { try fail("Duplicate or reserved profile identifiers."); return }
         for profile in profiles { try profile.validate() }
         try liveBoard?.validate()
+        guard (autopilot ?? AutopilotPreferences()).valid else { try fail("Invalid Autopilot intensity."); return }
         guard (tempo ?? TempoSettings()).valid else { try fail("BPM must be between 30 and 300."); return }
         var occupied = Set<Int>()
         let fixtureIDs = Set(fixtures.map(\.id))

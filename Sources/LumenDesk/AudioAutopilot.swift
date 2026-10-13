@@ -80,6 +80,7 @@ extension LightingStore {
         guard time >= lastMusicTime else { return }
         music = musicAnalyzer.process(level: level,bass: bass,high: high,time: time)
         lastMusicTime = time
+        if automaticTempo, music.confidence >= 0.55, music.beat { tempoClock.alignBeat() }
         if automaticTempo, let detected = music.bpm, music.confidence >= 0.55, time-lastTempoUpdate >= 1 {
             // Gradual changes avoid abrupt jumps from noisy half/double-time estimates.
             project.tempo = TempoSettings(bpm: bpm*0.8+detected*0.2)
