@@ -49,4 +49,35 @@ final class LightingEngineTests: XCTestCase {
         let midpoint = FixtureState.off.blended(to: FixtureState(dimmer: 1), fraction: 0.5)
         XCTAssertEqual(midpoint.dimmer, 0.5)
     }
+    @MainActor func testCueListAdvancesInOrderAndStopsAtEnd() {
+        let store = LightingStore()
+        let ids = store.project.cues.map(\.id)
+        XCTAssertEqual(store.nextCueID, ids[0])
+        store.goNext()
+        XCTAssertEqual(store.activeCueID, ids[0])
+        store.goNext()
+        XCTAssertEqual(store.activeCueID, ids[1])
+        XCTAssertNil(store.nextCueID)
+        store.goNext()
+        XCTAssertEqual(store.activeCueID, ids[1])
+        XCTAssertFalse(store.outputEnabled)
+        store.stop()
+        XCTAssertEqual(store.nextCueID, ids[0])
+    }
+    @MainActor func testCueUpdateAndDeletingActiveCue() {
+        let store = LightingStore()
+        let cueID = store.project.cues[0].id
+        let fixtureID = store.project.fixtures[0].id
+        let look = FixtureState(dimmer: 0.3, red: 0, green: 0, blue: 1)
+        store.setState(id: fixtureID, state: look)
+        store.selectedCueID = cueID
+        store.updateSelectedCue()
+        XCTAssertEqual(store.project.cues[0].levels[fixtureID], look)
+        store.activateCue(id: cueID)
+        store.removeCue(id: cueID)
+        XCTAssertNil(store.activeCueID)
+        XCTAssertFalse(store.project.cues.contains { $0.id == cueID })
+        XCTAssertTrue(store.frame.allSatisfy { $0 == 0 })
+        XCTAssertFalse(store.outputEnabled)
+    }
 }

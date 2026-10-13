@@ -77,6 +77,21 @@ import UniformTypeIdentifiers
         selectedCueID = id
         if fadeDuration == 0 { fixtureStates = fadeTo; fadeStart = nil }
     }
+    var nextCueID: UUID? {
+        guard !project.cues.isEmpty else { return nil }
+        guard let id = activeCueID, let index = project.cues.firstIndex(where: { $0.id == id }) else { return project.cues.first?.id }
+        return project.cues.indices.contains(index + 1) ? project.cues[index + 1].id : nil
+    }
+    func goNext() { if let id = nextCueID { activateCue(id: id) } }
+    func updateSelectedCue() {
+        guard let id = selectedCueID, let index = project.cues.firstIndex(where: { $0.id == id }) else { return }
+        project.cues[index].levels = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, state(for: $0.id)) })
+    }
+    func removeCue(id: UUID) {
+        if activeCueID == id { stop() }
+        project.cues.removeAll { $0.id == id }
+        if selectedCueID == id { selectedCueID = project.cues.first?.id }
+    }
     func stop() {
         fadeStart = nil
         activeCueID = nil

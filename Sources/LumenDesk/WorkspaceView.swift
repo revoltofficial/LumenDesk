@@ -1,185 +1,348 @@
 import SwiftUI
+import AppKit
 
 struct WorkspaceView: View {
     @EnvironmentObject var store: LightingStore
-    @State private var page = "Design"
+    @State private var mode = "Design"
+    @State private var showingPatch = false
+    @State private var paletteSearch = ""
+    @State private var liveStyle = "Buttons"
+    @State private var showEffects = false
+    @State private var confirmUpdate = false
     private let accent = Color(red: 0.43, green: 0.86, blue: 0.78)
+
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 26) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("LUMEN DESK").font(.system(size: 18, weight: .bold, design: .rounded))
-                    Text("Your stage. Your show.").font(.caption).foregroundStyle(.secondary)
-                }.padding(.top, 12)
-                ForEach(["Patch", "Design", "Live"], id: \.self) { item in
-                    Button { page = item } label: {
-                        Label(item, systemImage: item == "Patch" ? "cable.connector" : item == "Design" ? "square.grid.3x3" : "play.rectangle")
-                            .font(.system(size: 14, weight: .semibold)).frame(maxWidth: .infinity, alignment: .leading).padding(12)
-                            .background(page == item ? accent.opacity(0.13) : Color.clear, in: RoundedRectangle(cornerRadius: 10))
-                            .foregroundStyle(page == item ? accent : .secondary)
-                    }.buttonStyle(.plain)
+        VStack(spacing: 0) {
+            toolbar
+            Divider()
+            HStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    stage.frame(minHeight: 250, maxHeight: .infinity)
+                    modeBar
+                    Divider()
+                    if mode == "Design" { designControls.frame(height: 230) }
+                    else { liveControls.frame(height: 230) }
                 }
-                Spacer()
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("SHOW FILE").font(.caption2).foregroundStyle(.secondary)
-                    Button("Open show…", action: store.loadProject)
-                    Button("Save show…", action: store.saveProject)
-                }.buttonStyle(.plain)
                 Divider()
-                Label(store.outputEnabled ? "Output running" : "Output stopped", systemImage: "circle.fill")
-                    .font(.caption).foregroundStyle(store.outputEnabled ? accent : .secondary)
-            }.padding(20).frame(width: 190).background(Color(white: 0.075))
-            VStack(spacing: 0) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(page).font(.system(size: 28, weight: .semibold))
-                        Text(page == "Patch" ? "Add fixtures and assign their DMX addresses." : page == "Design" ? "Shape your look, then capture it as a cue." : "Bring your cues and effects to the stage.")
-                            .foregroundStyle(.secondary).font(.subheadline)
-                    }
-                    Spacer()
-                    Text("\(store.project.fixtures.count) fixtures · Universe \(store.project.universe)").font(.caption).foregroundStyle(.secondary)
-                }.padding(26)
-                Divider()
-                if page == "Patch" { patch.padding(24) }
-                else if page == "Design" { design.padding(24) }
-                else { live.padding(24) }
-                Spacer(minLength: 0)
-                if let error = store.errorMessage { Text(error).font(.caption).foregroundStyle(.orange).padding(.horizontal, 20).padding(.bottom, 8) }
-                transport
-            }.background(Color(white: 0.105))
-        }
-    }
-    private var patch: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Fixture patch").font(.headline)
-                Spacer()
-                Button(action: store.addFixture) { Label("Add fixture", systemImage: "plus") }
+                palette.frame(width: 270)
             }
-            ScrollView {
-                VStack(spacing: 8) {
-                    ForEach($store.project.fixtures) { $fixture in
-                        HStack(spacing: 14) {
-                            Image(systemName: "lightbulb.led.fill").foregroundStyle(accent).frame(width: 24)
-                            TextField("Fixture name", text: $fixture.name).textFieldStyle(.roundedBorder)
-                            Picker("Type", selection: $fixture.kind) {
-                                Text("Dimmer").tag(FixtureKind.dimmer)
-                                Text("RGB").tag(FixtureKind.rgb)
-                                Text("RGBW").tag(FixtureKind.rgbw)
-                            }.labelsHidden().frame(width: 100)
-                            Stepper(value: $fixture.address, in: 1...max(1, 513 - fixture.kind.footprint)) {
-                                Text("DMX \(fixture.address)").monospacedDigit().frame(width: 75)
-                            }.frame(width: 130)
-                            Button { store.removeFixture(id: fixture.id) } label: { Image(systemName: "trash") }.buttonStyle(.borderless)
-                        }.padding(12).background(Color.white.opacity(0.035), in: RoundedRectangle(cornerRadius: 10))
-                    }
-                }
+            if let error = store.errorMessage {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle").foregroundStyle(.orange)
+                    Text(error).font(.caption)
+                    Spacer()
+                    Button { store.errorMessage = nil } label: { Image(systemName: "xmark") }.buttonStyle(.plain)
+                }.padding(10).background(Color.orange.opacity(0.08))
             }
             Divider()
-            HStack {
-                Text("Art-Net destination").foregroundStyle(.secondary)
-                TextField("192.168.1.100", text: $store.project.destination).textFieldStyle(.roundedBorder).frame(width: 170)
-                Stepper("Universe \(store.project.universe)", value: $store.project.universe, in: 1...32768).frame(width: 190)
-                Spacer()
-            }
-            Text("Choose your Art-Net node’s unicast address. Universe 1 sends to Art-Net port-address 0. Fixture channels must not overlap.").font(.caption).foregroundStyle(.secondary)
+            transport
+        }
+        .background(Color(white: 0.10))
+        .sheet(isPresented: $showingPatch) { patchSheet }
+        .confirmationDialog("Replace the selected cue with the current fixture levels?", isPresented: $confirmUpdate) {
+            Button("Update cue", action: store.updateSelectedCue)
         }
     }
-    private var design: some View {
-        HStack(alignment: .top, spacing: 20) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack { Text("Stage plan").font(.headline); Spacer(); Button("Add fixture", action: store.addFixture) }
-                GeometryReader { geo in
+
+    private var toolbar: some View {
+        HStack(spacing: 18) {
+            Label("LumenDesk", systemImage: "light.beacon.max.fill").font(.headline)
+            Divider().frame(height: 24)
+            Button { showingPatch = true } label: { Label("Patch & Output", systemImage: "cable.connector") }
+            Button(action: store.loadProject) { Image(systemName: "folder") }.help("Open show")
+            Button(action: store.saveProject) { Image(systemName: "square.and.arrow.down") }.help("Save show")
+            Spacer()
+            Text("\(store.project.fixtures.count) fixtures").foregroundStyle(.secondary)
+            Text("Universe \(store.project.universe)").foregroundStyle(.secondary)
+            Label(store.outputEnabled ? "Output on" : "Preview only", systemImage: "circle.fill")
+                .foregroundStyle(store.outputEnabled ? accent : .secondary)
+        }.font(.caption).buttonStyle(.borderless).padding(.horizontal, 20).frame(height: 52)
+    }
+
+    private var stage: some View {
+        GeometryReader { geo in
+            ZStack {
+                Color(white: 0.055)
+                Canvas { context, size in
+                    var grid = Path()
+                    for x in stride(from: 0.0, through: size.width, by: 32) { grid.move(to: CGPoint(x: x, y: 0)); grid.addLine(to: CGPoint(x: x, y: size.height)) }
+                    for y in stride(from: 0.0, through: size.height, by: 32) { grid.move(to: CGPoint(x: 0, y: y)); grid.addLine(to: CGPoint(x: size.width, y: y)) }
+                    context.stroke(grid, with: .color(.white.opacity(0.025)), lineWidth: 1)
+                    let rect = CGRect(x: size.width * 0.1, y: size.height * 0.26, width: size.width * 0.8, height: size.height * 0.5)
+                    context.stroke(Path(roundedRect: rect, cornerRadius: 8), with: .color(.white.opacity(0.12)), lineWidth: 1)
+                }.allowsHitTesting(false)
+                VStack {
+                    HStack { Text("STAGE PREVIEW").tracking(2); Spacer(); Text(mode == "Design" ? "Drag to arrange" : "Live levels") }
+                    Spacer()
+                    Text("AUDIENCE").tracking(5)
+                }.font(.caption2).foregroundStyle(.secondary).padding(20).allowsHitTesting(false)
+                ForEach(store.project.fixtures) { fixture in
+                    let state = store.renderedState(for: fixture.id)
+                    let color = Color(red: state.red, green: state.green, blue: state.blue)
+                    let x = max(48, min(geo.size.width - 48, fixture.x * geo.size.width))
+                    let y = max(58, min(geo.size.height - 68, fixture.y * geo.size.height))
                     ZStack {
-                        RoundedRectangle(cornerRadius: 16).fill(Color(white: 0.07))
-                        VStack { Text("UPSTAGE").font(.caption2).tracking(4).foregroundStyle(.secondary); Spacer(); Text("AUDIENCE").font(.caption2).tracking(4).foregroundStyle(.secondary) }.padding(18)
-                        ForEach(store.project.fixtures) { fixture in
-                            let state = store.renderedState(for: fixture.id)
-                            VStack(spacing: 6) {
-                                Image(systemName: "lightbulb.led.fill").font(.system(size: 27)).foregroundStyle(Color(red: state.red, green: state.green, blue: state.blue)).opacity(0.25 + state.dimmer * 0.75)
-                                Text(fixture.name).font(.caption).lineLimit(1)
-                            }.padding(10).background(store.selectedFixtureID == fixture.id ? accent.opacity(0.16) : Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
-                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(store.selectedFixtureID == fixture.id ? accent : .clear))
-                                .position(x: max(50, min(geo.size.width - 50, fixture.x * geo.size.width)), y: max(55, min(geo.size.height - 55, fixture.y * geo.size.height)))
-                                .onTapGesture { store.selectedFixtureID = fixture.id }
-                                .gesture(DragGesture(coordinateSpace: .named("stage")).onChanged { value in
-                                    store.selectedFixtureID = fixture.id
-                                    if let i = store.project.fixtures.firstIndex(where: { $0.id == fixture.id }) {
-                                        store.project.fixtures[i].x = min(0.95, max(0.05, value.location.x / geo.size.width))
-                                        store.project.fixtures[i].y = min(0.9, max(0.1, value.location.y / geo.size.height))
-                                    }
-                                })
+                        Ellipse().fill(color.opacity(state.dimmer * 0.13)).frame(width: 95, height: 135).blur(radius: 12).offset(y: 50)
+                        VStack(spacing: 7) {
+                            Image(systemName: "lightbulb.led.fill").font(.system(size: 24))
+                                .foregroundStyle(color).opacity(0.2 + state.dimmer * 0.8)
+                                .padding(12).background(Color(white: 0.14), in: Circle())
+                                .overlay(Circle().stroke(store.selectedFixtureID == fixture.id ? accent : .white.opacity(0.15), lineWidth: 2))
+                            Text(fixture.name).font(.caption).lineLimit(1)
+                            Text("\(Int(state.dimmer * 100))%").font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
                         }
                     }
-                    .coordinateSpace(name: "stage")
-                }.frame(minHeight: 330)
-                Text("Select a fixture to adjust its look. Drag fixtures to arrange the stage.").font(.caption).foregroundStyle(.secondary)
+                    .frame(width: 96, height: 110).contentShape(Rectangle())
+                    .position(x: x, y: y)
+                    .onTapGesture { store.selectedFixtureID = fixture.id }
+                    .gesture(DragGesture(coordinateSpace: .named("stage")).onChanged { value in
+                        guard mode == "Design", let i = store.project.fixtures.firstIndex(where: { $0.id == fixture.id }) else { return }
+                        store.selectedFixtureID = fixture.id
+                        store.project.fixtures[i].x = min(0.94, max(0.06, value.location.x / geo.size.width))
+                        store.project.fixtures[i].y = min(0.82, max(0.16, value.location.y / geo.size.height))
+                    })
+                }
+                if store.project.fixtures.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("Start with your lighting rig").font(.title3)
+                        Button("Patch fixtures…") { showingPatch = true }
+                    }
+                }
+            }.coordinateSpace(name: "stage").clipped()
+        }
+    }
+
+    private var modeBar: some View {
+        HStack {
+            Picker("Workspace", selection: $mode) { Text("Design").tag("Design"); Text("Live").tag("Live") }
+                .pickerStyle(.segmented).frame(width: 180)
+            Spacer()
+            if mode == "Design" {
+                Button(action: store.captureCue) { Label("Capture cue", systemImage: "plus.square") }
+            } else {
+                Button(action: store.goNext) { Label("Go Next", systemImage: "forward.end.fill") }.disabled(store.nextCueID == nil)
             }
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Fixture controls").font(.headline)
-                if let id = store.selectedFixtureID, let fixture = store.project.fixtures.first(where: { $0.id == id }) {
-                    Text(fixture.name).font(.title3)
-                    channel("Intensity", id: id, key: \.dimmer)
-                    if fixture.kind != .dimmer {
+        }.padding(.horizontal, 18).frame(height: 46)
+    }
+
+    private var designControls: some View {
+        HStack(alignment: .top, spacing: 22) {
+            if let id = store.selectedFixtureID, let fixture = store.project.fixtures.first(where: { $0.id == id }) {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(fixture.name).font(.headline)
+                    Text("\(fixture.kind.title) · DMX \(fixture.address)–\(fixture.address + fixture.kind.footprint - 1)").font(.caption).foregroundStyle(.secondary)
+                    channel("Dimmer", id: id, key: \.dimmer)
+                    if fixture.kind == .rgbw { channel("White", id: id, key: \.white) }
+                }.frame(width: 185)
+                if fixture.kind != .dimmer {
+                    Divider()
+                    VStack(alignment: .leading, spacing: 12) {
+                        ColorPicker("Color", selection: Binding(get: {
+                            let s = store.state(for: id)
+                            return Color(red: s.red, green: s.green, blue: s.blue)
+                        }, set: { color in
+                            guard let c = NSColor(color).usingColorSpace(.deviceRGB) else { return }
+                            var s = store.state(for: id)
+                            s.red = Double(c.redComponent); s.green = Double(c.greenComponent); s.blue = Double(c.blueComponent)
+                            store.setState(id: id, state: s)
+                        }), supportsOpacity: false)
+                        HStack(spacing: 8) {
+                            ForEach(0..<8) { index in
+                                let colors: [Color] = [.white, .red, .orange, .yellow, .green, .cyan, .blue, .purple]
+                                Button {
+                                    guard let c = NSColor(colors[index]).usingColorSpace(.deviceRGB) else { return }
+                                    var s = store.state(for: id)
+                                    s.red = Double(c.redComponent); s.green = Double(c.greenComponent); s.blue = Double(c.blueComponent)
+                                    store.setState(id: id, state: s)
+                                } label: { Circle().fill(colors[index]).frame(width: 21, height: 21).overlay(Circle().stroke(.white.opacity(0.3))) }
+                                .buttonStyle(.plain).help(["White", "Red", "Amber", "Yellow", "Green", "Cyan", "Blue", "Purple"][index])
+                            }
+                        }
                         channel("Red", id: id, key: \.red)
                         channel("Green", id: id, key: \.green)
                         channel("Blue", id: id, key: \.blue)
-                    }
-                    if fixture.kind == .rgbw { channel("White", id: id, key: \.white) }
-                } else { Text("Select a fixture on the stage.").foregroundStyle(.secondary) }
-                Divider()
-                Button(action: store.captureCue) { Label("Capture cue", systemImage: "plus.square") }.buttonStyle(.borderedProminent).tint(accent)
-                Text("Captures the current fixture levels as a reusable look.").font(.caption).foregroundStyle(.secondary)
-            }.padding(18).frame(width: 240).background(Color.white.opacity(0.035), in: RoundedRectangle(cornerRadius: 14))
-        }
+                    }.frame(maxWidth: 280)
+                }
+                Spacer(minLength: 0)
+            } else { Text("Select a fixture in the preview to design a look.").foregroundStyle(.secondary); Spacer() }
+        }.padding(18)
     }
+
     private func channel(_ title: String, id: UUID, key: WritableKeyPath<FixtureState, Double>) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 3) {
             HStack { Text(title); Spacer(); Text("\(Int(store.state(for: id)[keyPath: key] * 100))%").monospacedDigit().foregroundStyle(.secondary) }.font(.caption)
             Slider(value: Binding(get: { store.state(for: id)[keyPath: key] }, set: { value in
                 var state = store.state(for: id); state[keyPath: key] = value; store.setState(id: id, state: state)
             }), in: 0...1).tint(accent)
         }
     }
-    private var live: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
-                HStack { Text("Cue launcher").font(.headline); Spacer(); Button("Capture cue", action: store.captureCue) }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 190))], spacing: 12) {
-                    ForEach($store.project.cues) { $cue in
-                        VStack(alignment: .leading, spacing: 12) {
-                            TextField("Cue name", text: $cue.name).font(.headline).textFieldStyle(.plain)
-                            HStack { Text("Fade").font(.caption).foregroundStyle(.secondary); TextField("Seconds", value: $cue.fadeSeconds, format: .number).frame(width: 50); Text("sec").font(.caption) }
-                            Button { store.activateCue(id: cue.id) } label: { Label(store.activeCueID == cue.id ? "Playing" : "Go", systemImage: "play.fill").frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent).tint(store.activeCueID == cue.id ? accent : .gray)
-                        }.padding(16).background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 12))
+
+    private var palette: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack { Text("LOOK PALETTE").font(.caption).tracking(2); Spacer(); Button(action: store.captureCue) { Image(systemName: "plus") }.buttonStyle(.borderless).help("Capture current look") }
+            TextField("Find a cue", text: $paletteSearch).textFieldStyle(.roundedBorder)
+            ScrollView {
+                VStack(spacing: 4) {
+                    ForEach(Array(store.project.cues.enumerated()), id: \.element.id) { index, cue in
+                        if paletteSearch.isEmpty || cue.name.localizedCaseInsensitiveContains(paletteSearch) {
+                            Button { store.selectedCueID = cue.id } label: {
+                                HStack(spacing: 10) {
+                                    RoundedRectangle(cornerRadius: 4).fill(cueColor(cue)).frame(width: 24, height: 24)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(cue.name).lineLimit(1)
+                                        Text("\(index + 1) · \(cue.fadeSeconds, specifier: "%.1f") s fade").font(.caption2).foregroundStyle(.secondary)
+                                    }
+                                    Spacer(minLength: 0)
+                                    if store.activeCueID == cue.id { Image(systemName: "play.fill").foregroundStyle(accent) }
+                                }.padding(9).background(store.selectedCueID == cue.id ? accent.opacity(0.13) : .clear, in: RoundedRectangle(cornerRadius: 7))
+                            }.buttonStyle(.plain)
+                            .contextMenu {
+                                Button("Activate") { store.activateCue(id: cue.id) }
+                                Button("Delete cue", role: .destructive) { store.removeCue(id: cue.id) }
+                            }
+                        }
                     }
                 }
-                if store.project.cues.isEmpty { Text("Build a look in Design and capture your first cue.").foregroundStyle(.secondary) }
-                Divider()
-                Text("Effects").font(.headline)
-                ForEach($store.project.effects) { $effect in
-                    HStack(spacing: 16) {
-                        Toggle(effect.name, isOn: $effect.enabled).frame(width: 180)
-                        Picker("Pattern", selection: $effect.kind) { Text("Sine").tag(EffectKind.sine); Text("Chase").tag(EffectKind.chase); Text("Rainbow").tag(EffectKind.rainbow) }.frame(width: 140)
-                        VStack { Text("Rate \(effect.rate, specifier: "%.1f") Hz").font(.caption); Slider(value: $effect.rate, in: 0.05...4) }
-                        VStack { Text("Depth \(Int(effect.depth * 100))%").font(.caption); Slider(value: $effect.depth, in: 0...1) }
-                    }.padding(14).background(Color.white.opacity(0.035), in: RoundedRectangle(cornerRadius: 10))
+            }
+            Divider()
+            if let i = store.project.cues.firstIndex(where: { $0.id == store.selectedCueID }) {
+                Text("CUE INSPECTOR").font(.caption2).tracking(2).foregroundStyle(.secondary)
+                TextField("Cue name", text: $store.project.cues[i].name).textFieldStyle(.roundedBorder)
+                HStack {
+                    Text("Fade").font(.caption)
+                    TextField("Seconds", value: $store.project.cues[i].fadeSeconds, format: .number).textFieldStyle(.roundedBorder).frame(width: 70)
+                    Text("seconds").font(.caption).foregroundStyle(.secondary)
                 }
+                Button("Activate cue") { store.activateCue(id: store.project.cues[i].id) }.frame(maxWidth: .infinity)
+                Button("Update from current look…") { confirmUpdate = true }.font(.caption)
+            } else { Text("Capture a look to create a cue.").font(.caption).foregroundStyle(.secondary) }
+        }.padding(16).background(Color(white: 0.08))
+    }
+
+    private func cueColor(_ cue: Cue) -> Color {
+        let states = cue.levels.values.filter { $0.dimmer > 0 }
+        guard !states.isEmpty else { return Color(white: 0.25) }
+        let count = Double(states.count)
+        return Color(red: states.reduce(0) { $0 + $1.red } / count, green: states.reduce(0) { $0 + $1.green } / count, blue: states.reduce(0) { $0 + $1.blue } / count)
+    }
+
+    private var liveControls: some View {
+        VStack(spacing: 10) {
+            HStack {
+                Picker("Live layout", selection: $liveStyle) { Text("Buttons").tag("Buttons"); Text("Cue list").tag("Cue list") }.pickerStyle(.segmented).frame(width: 180)
+                Spacer()
+                Toggle("Effects", isOn: $showEffects).toggleStyle(.button)
+            }
+            ScrollView {
+                if showEffects { effectsPanel }
+                else if liveStyle == "Buttons" {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 10) {
+                        ForEach(store.project.cues) { cue in
+                            Button { store.activateCue(id: cue.id) } label: {
+                                VStack(spacing: 8) {
+                                    Text(cue.name).font(.headline).lineLimit(2)
+                                    Label(store.activeCueID == cue.id ? "Active" : "\(cue.fadeSeconds.formatted()) s", systemImage: store.activeCueID == cue.id ? "play.fill" : "circle")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                }.frame(maxWidth: .infinity, minHeight: 76)
+                                    .background(cueColor(cue).opacity(store.activeCueID == cue.id ? 0.45 : 0.15), in: RoundedRectangle(cornerRadius: 8))
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(store.activeCueID == cue.id ? accent : cueColor(cue).opacity(0.4), lineWidth: 1))
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                } else {
+                    VStack(spacing: 4) {
+                        ForEach(Array(store.project.cues.enumerated()), id: \.element.id) { index, cue in
+                            Button { store.activateCue(id: cue.id) } label: {
+                                HStack {
+                                    Text(String(format: "%02d", index + 1)).monospacedDigit().foregroundStyle(.secondary).frame(width: 28)
+                                    Text(cue.name)
+                                    Spacer()
+                                    Text("\(cue.fadeSeconds, specifier: "%.1f") s").foregroundStyle(.secondary)
+                                    Image(systemName: store.activeCueID == cue.id ? "play.fill" : "play").foregroundStyle(accent)
+                                }.padding(10).background(store.activeCueID == cue.id ? accent.opacity(0.15) : .white.opacity(0.03), in: RoundedRectangle(cornerRadius: 6))
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }
+                if store.project.cues.isEmpty && !showEffects { Text("Capture a look in Design to add a cue here.").foregroundStyle(.secondary).padding() }
+            }
+        }.padding(16)
+    }
+
+    private var effectsPanel: some View {
+        VStack(spacing: 10) {
+            ForEach($store.project.effects) { $effect in
+                HStack(spacing: 14) {
+                    Toggle(effect.name, isOn: $effect.enabled).frame(width: 145, alignment: .leading)
+                    Canvas { context, size in
+                        var curve = Path()
+                        for step in 0...80 {
+                            let x = Double(step) / 80
+                            let y: Double
+                            switch effect.kind {
+                            case .sine: y = 1 - effect.depth + effect.depth * (sin(x * 4 * .pi) + 1) / 2
+                            case .chase: y = Int(x * 6) % 3 == 0 ? 1 : 1 - effect.depth
+                            case .rainbow: y = x
+                            }
+                            let p = CGPoint(x: x * size.width, y: (1 - y) * (size.height - 4) + 2)
+                            if step == 0 { curve.move(to: p) } else { curve.addLine(to: p) }
+                        }
+                        context.stroke(curve, with: .color(accent), lineWidth: 2)
+                    }.frame(width: 80, height: 30).help("Pattern preview")
+                    VStack { Text("\(effect.rate, specifier: "%.2f") Hz").font(.caption); Slider(value: $effect.rate, in: 0.05...4) }
+                    VStack { Text("Depth \(Int(effect.depth * 100))%").font(.caption); Slider(value: $effect.depth, in: 0...1) }
+                }.padding(10).background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 8))
             }
         }
     }
+
     private var transport: some View {
-        HStack(spacing: 18) {
+        HStack(spacing: 16) {
             Button(action: store.stop) { Label("Stop", systemImage: "stop.fill") }
             Toggle("Blackout", isOn: $store.blackout).toggleStyle(.button).tint(.red)
             Divider().frame(height: 24)
             Text("Master").font(.caption)
-            Slider(value: $store.master, in: 0...1).tint(accent).frame(maxWidth: 220)
-            Text("\(Int(store.master * 100))%").monospacedDigit().font(.caption).frame(width: 35)
+            Slider(value: $store.master, in: 0...1).tint(accent).frame(width: 140)
+            Text("\(Int(store.master * 100))%").font(.caption).monospacedDigit().frame(width: 35)
             Spacer()
+            if let id = store.nextCueID, let cue = store.project.cues.first(where: { $0.id == id }) {
+                Text("Next: \(cue.name)").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
             Button { store.outputEnabled ? store.stopOutput() : store.startOutput() } label: {
                 Label(store.outputEnabled ? "Stop output" : "Start output", systemImage: "network")
             }.buttonStyle(.borderedProminent).tint(store.outputEnabled ? .orange : accent)
-        }.padding(18).background(Color(white: 0.065))
+        }.padding(.horizontal, 18).frame(height: 60)
+    }
+
+    private var patchSheet: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack { Text("Patch & Output").font(.title2); Spacer(); Button("Done") { showingPatch = false }.keyboardShortcut(.defaultAction) }
+            HStack { Text("Fixture patch").font(.headline); Spacer(); Button(action: store.addFixture) { Label("Add fixture", systemImage: "plus") } }
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach($store.project.fixtures) { $fixture in
+                        HStack(spacing: 14) {
+                            Image(systemName: "lightbulb.led.fill").foregroundStyle(accent)
+                            TextField("Fixture name", text: $fixture.name).textFieldStyle(.roundedBorder)
+                            Picker("Type", selection: $fixture.kind) { ForEach(FixtureKind.allCases) { kind in Text(kind.title).tag(kind) } }.labelsHidden().frame(width: 95)
+                            Stepper(value: $fixture.address, in: 1...max(1, 513 - fixture.kind.footprint)) { Text("DMX \(fixture.address)").monospacedDigit().frame(width: 75) }.frame(width: 135)
+                            Button { store.removeFixture(id: fixture.id) } label: { Image(systemName: "trash") }.buttonStyle(.borderless)
+                        }.padding(10).background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+            }
+            Divider()
+            Text("Art-Net output").font(.headline)
+            HStack {
+                Text("Destination")
+                TextField("192.168.1.100", text: $store.project.destination).textFieldStyle(.roundedBorder).frame(width: 180)
+                Stepper("Universe \(store.project.universe)", value: $store.project.universe, in: 1...32768)
+            }
+            Text("Use your node’s unicast address. Universe 1 maps to port-address 0. Output stays off until you start it.").font(.caption).foregroundStyle(.secondary)
+            if let issue = patchIssue { Label(issue, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(.orange) }
+        }.padding(24).frame(width: 720, height: 480).preferredColorScheme(.dark)
+    }
+    private var patchIssue: String? {
+        do { try store.project.validate(); return nil } catch { return error.localizedDescription }
     }
 }
