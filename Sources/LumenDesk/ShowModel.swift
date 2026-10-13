@@ -87,7 +87,7 @@ struct SequenceSettings: Codable {
     var repeats = false
 }
 enum EffectKind: String, Codable, CaseIterable, Identifiable {
-    case sine, chase, rainbow, circle
+    case sine, chase, rainbow, circle, pulse, scanner, sparkle, colorChase
     var id: String { rawValue }
     var title: String { rawValue.capitalized }
 }
@@ -101,7 +101,18 @@ struct Effect: Identifiable, Codable {
     var beatTiming: Bool? = nil
     var beatsPerCycle: Double? = nil
     var cycleBeats: Double { beatsPerCycle ?? 4 }
-    var validTiming: Bool { cycleBeats.isFinite && [0.25, 0.5, 1, 2, 4, 8, 16].contains(cycleBeats) }
+    var waveform: Waveform? = nil
+    var spread: Double? = nil
+    var movement: MovementPattern? = nil
+    var pathPoints: [MotionPoint]? = nil
+    var pathClosed: Bool? = nil
+    var colors: [EffectColor]? = nil
+    var validTiming: Bool {
+        cycleBeats.isFinite && [0.25, 0.5, 1, 2, 4, 8, 16].contains(cycleBeats)
+        && (spread ?? 1).isFinite && (0...1).contains(spread ?? 1)
+        && (pathPoints == nil || ((2...32).contains(pathPoints!.count) && pathPoints!.allSatisfy { $0.valid }))
+        && (colors == nil || ((1...16).contains(colors!.count) && colors!.allSatisfy { $0.valid }))
+    }
 }
 struct ShowProject: Codable {
     var schemaVersion: Int = 1

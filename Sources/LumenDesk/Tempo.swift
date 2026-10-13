@@ -43,15 +43,14 @@ extension LightingStore {
 struct TempoControls: View {
     @EnvironmentObject var store: LightingStore
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 6) {
             Text("BPM").font(.caption)
             TextField("BPM", value: Binding(get: { store.bpm }, set: { store.setBPM($0) }), format: .number.precision(.fractionLength(0...1))).textFieldStyle(.roundedBorder).frame(width: 65)
-            Button("Tap Tempo", action: store.tapTempo)
+            Button("Tap", action: store.tapTempo)
             Button("Sync", action: store.syncTempo).help("Restart the shared beat and all effect phases together")
             HStack(spacing: 5) {
                 ForEach(0..<4) { beat in Circle().fill(Int(store.tempoClock.beats.truncatingRemainder(dividingBy: 4)) == beat ? Color.mint : Color.white.opacity(0.15)).frame(width: 9, height: 9) }
             }.accessibilityLabel("Beat \(Int(store.tempoClock.beats.truncatingRemainder(dividingBy: 4)) + 1) of 4")
-            Spacer()
         }.font(.caption)
     }
 }

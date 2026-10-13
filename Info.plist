@@ -8,6 +8,7 @@
   <key>CFBundleShortVersionString</key><string>0.1.0</string>
   <key>CFBundleVersion</key><string>1</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
+  <key>NSMicrophoneUsageDescription</key><string>LumenDesk listens to music to estimate tempo and drive local Autopilot lighting. Audio is not saved or uploaded.</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSLocalNetworkUsageDescription</key><string>LumenDesk sends lighting levels to the Art-Net node you select.</string>
 </dict></plist>

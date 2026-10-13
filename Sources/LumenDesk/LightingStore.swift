@@ -88,6 +88,19 @@ import UniformTypeIdentifiers
     private var sequenceCues: [UUID: Cue] = [:]
     private var sequencePausedAt: TimeInterval?
     private let clock: () -> TimeInterval
+    @Published var music = MusicSnapshot()
+    @Published var listening = false
+    @Published var audioDemo = false
+    @Published var autopilotEnabled = false
+    @Published var automaticTempo = true
+    @Published var musicStyle = MusicStyle.auto
+    @Published var autopilotStrength = 0.65
+    @Published var microphoneStatus = "Microphone off"
+    var microphone: MicrophoneListener?
+    var musicAnalyzer = MusicAnalyzer()
+    var lastMusicTime: TimeInterval = -.infinity
+    var lastTempoUpdate: TimeInterval = -.infinity
+    var audioSession = UUID()
     private let output = ArtNetOutput()
     private var timer: Timer?
     private var lastTick = ProcessInfo.processInfo.systemUptime
@@ -304,6 +317,7 @@ import UniformTypeIdentifiers
             var value = renderedState(for: fixture.id); value.dimmer = 0
             return (fixture.id, value)
         })
+        autopilotEnabled = false
         releaseAllLayers()
         cancelSequence()
         fadeStart = nil
@@ -349,6 +363,11 @@ import UniformTypeIdentifiers
     func resetTempoTick() { lastTick = clock() }
     func tick() {
         let now = clock()
+        if audioDemo {
+            let beat = now.truncatingRemainder(dividingBy: 0.5)
+            let section = Int(now / 12) % 3
+            receiveMusic(level: section == 1 ? 0.025 : (beat < 0.06 ? 0.3 : 0.1), bass: section == 1 ? 0.01 : 0.14, high: section == 2 ? 0.12 : 0.05, at: now)
+        }
         tempoClock.advance(seconds: max(0, now - lastTick), bpm: bpm)
         phase += min(0.25, max(0, now - lastTick))
         lastTick = now
@@ -385,25 +404,43 @@ import UniformTypeIdentifiers
         let count = max(1, project.fixtures.count)
         for effect in layerMixer.effects(for: id, base: project.effects) where effect.enabled && effect.rate.isFinite && effect.depth.isFinite {
             let cycles = effect.beatTiming == true ? tempoClock.beats / max(0.25, effect.cycleBeats) : phase * max(0, effect.rate)
-            let position = cycles + Double(index) / Double(count)
+            let position = cycles + Double(index) / Double(count) * (effect.spread ?? 1)
             let depth = min(1, max(0, effect.depth))
             switch effect.kind {
             case .circle:
                 if project.fixtures.first(where: { $0.id == id })?.resolvedProfile.movingHead == true {
-                    result.pan = min(1, max(0, result.pan + sin(position * 2 * .pi) * 0.18 * depth))
-                    result.tilt = min(1, max(0, result.tilt + cos(position * 2 * .pi) * 0.12 * depth))
+                    let point = MotionPath.sample(effect: effect, phase: position)
+                    result.pan = min(1, max(0, result.pan + point.x * 0.18 * depth))
+                    result.tilt = min(1, max(0, result.tilt + point.y * 0.12 * depth))
                 }
-            case .sine: result.dimmer *= 1 - depth + depth * (sin(position * 2 * .pi) + 1) / 2
+            case .sine: result.dimmer *= 1 - depth + depth * (effect.waveform ?? .sine).value(at: position)
+            case .pulse: result.dimmer *= 1 - depth + depth * max(0, 1 - (position - floor(position)) * 5)
+            case .sparkle:
+                let step = floor(cycles * 8)
+                let seed = sin(step * 12.9898 + Double(index) * 78.233) * 43758.5453
+                let random = seed - floor(seed)
+                result.dimmer *= random > 0.7 ? 1 : 1 - depth
+            case .scanner:
+                let target = (effect.waveform ?? .triangle).value(at: cycles) * Double(max(1, count - 1))
+                result.dimmer *= 1 - depth + depth * max(0, 1 - abs(Double(index) - target))
             case .chase:
                 let step = Int((cycles * (effect.beatTiming == true ? Double(count) : 1)).truncatingRemainder(dividingBy: Double(count)))
                 result.dimmer *= index == step ? 1 : 1 - depth
-            case .rainbow:
-                let hue = position - floor(position)
-                let color = NSColor(calibratedHue: hue, saturation: 1, brightness: 1, alpha: 1)
-                result.red = result.red * (1 - depth) + Double(color.redComponent) * depth
-                result.green = result.green * (1 - depth) + Double(color.greenComponent) * depth
-                result.blue = result.blue * (1 - depth) + Double(color.blueComponent) * depth
+            case .rainbow, .colorChase:
+                let color: EffectColor
+                if effect.kind == .colorChase {
+                    let palette = effect.colors ?? EffectColor.disco
+                    color = palette[Int(floor((position - floor(position)) * Double(palette.count))) % palette.count]
+                } else { color = EffectColor.hue(position - floor(position)) }
+                result.red = result.red * (1 - depth) + color.red * depth
+                result.green = result.green * (1 - depth) + color.green * depth
+                result.blue = result.blue * (1 - depth) + color.blue * depth
             }
+        }
+        if autopilotEnabled {
+            result = AutopilotRenderer.render(base: result, snapshot: music, style: musicStyle, strength: autopilotStrength,
+                beats: tempoClock.beats, index: index, moving: project.fixtures.first(where: { $0.id == id })?.resolvedProfile.movingHead == true,
+                fresh: clock() - lastMusicTime < 1)
         }
         result.dimmer *= blackout ? 0 : (master.isFinite ? min(1,max(0,master)) : 0)
         return result
@@ -461,6 +498,7 @@ import UniformTypeIdentifiers
             stopOutput()
             cancelSequence()
             releaseAllLayers()
+            stopListening()
             project = next
             syncTempo(); tempoClock.resetTaps()
             fadeStart = nil

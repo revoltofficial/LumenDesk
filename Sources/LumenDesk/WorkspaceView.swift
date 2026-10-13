@@ -336,7 +336,6 @@ struct WorkspaceView: View {
                 Spacer()
                 Toggle("Effects", isOn: $showEffects).toggleStyle(.button)
             }
-            TempoControls()
             HStack(spacing: 12) {
                 Button(action: store.startSequence) { Label(store.sequencePlayer == nil ? "Run sequence" : "Restart", systemImage: "play.circle") }
                     .disabled(store.project.cues.isEmpty)
@@ -393,47 +392,27 @@ struct WorkspaceView: View {
 
     private var effectsPanel: some View {
         VStack(spacing: 10) {
-            ForEach($store.project.effects) { $effect in
-                HStack(spacing: 14) {
-                    Toggle(effect.name, isOn: $effect.enabled).frame(width: 145, alignment: .leading)
-                    Canvas { context, size in
-                        var curve = Path()
-                        for step in 0...80 {
-                            let x = Double(step) / 80
-                            let y: Double
-                            switch effect.kind {
-                            case .sine: y = 1 - effect.depth + effect.depth * (sin(x * 4 * .pi) + 1) / 2
-                            case .chase: y = Int(x * 6) % 3 == 0 ? 1 : 1 - effect.depth
-                            case .rainbow: y = x
-                            case .circle: y = (sin(x * 2 * .pi) + 1) / 2
-                            }
-                            let p = CGPoint(x: x * size.width, y: (1 - y) * (size.height - 4) + 2)
-                            if step == 0 { curve.move(to: p) } else { curve.addLine(to: p) }
-                        }
-                        context.stroke(curve, with: .color(accent), lineWidth: 2)
-                    }.frame(width: 80, height: 30).help("Pattern preview")
-                    VStack {
-                        Picker("Timing", selection: Binding(get: { effect.beatTiming ?? false }, set: { effect.beatTiming = $0 })) { Text("Seconds").tag(false); Text("Beats").tag(true) }.pickerStyle(.segmented)
-                        if effect.beatTiming == true {
-                            Picker("Beats per cycle", selection: Binding(get: { effect.cycleBeats }, set: { effect.beatsPerCycle = $0 })) { ForEach([0.25, 0.5, 1, 2, 4, 8, 16], id: \.self) { Text("\($0.formatted()) beats").tag($0) } }
-                        } else {
-                            Text("\((1 / max(0.05, effect.rate)), specifier: "%.2f") s per \(effect.kind == .chase ? "step" : "cycle")").font(.caption)
-                            Slider(value: $effect.rate, in: 0.05...4)
-                        }
+            HStack {
+                Menu("Add effect") {
+                    ForEach(EffectKind.allCases) { kind in
+                        Button(kind.title) { store.project.effects.append(Effect(name: kind.title, kind: kind)) }
                     }
-                    VStack { Text("Depth \(Int(effect.depth * 100))%").font(.caption); Slider(value: $effect.depth, in: 0...1) }
-                }.padding(10).background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 8))
+                }
+                Spacer()
             }
+            ForEach($store.project.effects) { $effect in EffectEditor(effect: $effect) }
         }
     }
 
     private var transport: some View {
         HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 5) { TempoControls(); AutopilotControls() }.frame(width: 310)
+            Divider().frame(height: 48)
             Button(action: store.stop) { Label("Stop", systemImage: "stop.fill") }
             Toggle("Blackout", isOn: $store.blackout).toggleStyle(.button).tint(.red)
             Divider().frame(height: 24)
             Text("Master").font(.caption)
-            Slider(value: $store.master, in: 0...1).tint(accent).frame(width: 140)
+            Slider(value: $store.master, in: 0...1).tint(accent).frame(width: 100)
             Text("\(Int(store.master * 100))%").font(.caption).monospacedDigit().frame(width: 35)
             Spacer()
             if let id = store.nextCueID, let cue = store.project.cues.first(where: { $0.id == id }) {
@@ -442,7 +421,7 @@ struct WorkspaceView: View {
             Button { store.outputEnabled ? store.stopOutput() : store.startOutput() } label: {
                 Label(store.outputEnabled ? "Stop output" : "Start output", systemImage: "network")
             }.buttonStyle(.borderedProminent).tint(store.outputEnabled ? .orange : accent)
-        }.padding(.horizontal, 18).frame(height: 60)
+        }.padding(.horizontal, 18).frame(height: 92)
     }
 
     private var patchSheet: some View {
