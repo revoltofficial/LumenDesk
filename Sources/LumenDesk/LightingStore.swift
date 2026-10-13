@@ -64,6 +64,7 @@ import UniformTypeIdentifiers
             setState(id: fixture.id, state: state)
         }
     }
+    @Published private(set) var layerMixer = LayerMixer()
     @Published var selectedCueID: UUID?
     @Published var master: Double = 1
     @Published var blackout = false
@@ -104,8 +105,63 @@ import UniformTypeIdentifiers
             }
         }
     }
-    func state(for id: UUID) -> FixtureState { fixtureStates[id] ?? .off }
+    func state(for id: UUID) -> FixtureState { layerMixer.state(for: id, base: fixtureStates[id] ?? .off, now: clock()) }
+    func capturePreset(name: String, kind: PresetKind) {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, !selectedFixtures.isEmpty else { return }
+        var values: [UUID: PresetValues] = [:]
+        for fixture in selectedFixtures {
+            let state = state(for: fixture.id)
+            var value = PresetValues()
+            if kind == .intensity || kind == .look { value.dimmer = state.dimmer }
+            if (kind == .color || kind == .look) && fixture.kind != .dimmer {
+                value.red = state.red; value.green = state.green; value.blue = state.blue
+                if fixture.kind == .rgbw { value.white = state.white }
+            }
+            if !value.channels.isEmpty || kind == .effects { values[fixture.id] = value }
+        }
+        guard !values.isEmpty else { errorMessage = "Select color fixtures to capture a color preset."; return }
+        let effects = kind == .effects || kind == .look ? project.effects.filter { $0.enabled } : nil
+        var presets = project.presets ?? []
+        presets.append(LookPreset(name: name, kind: kind, values: values, effects: effects))
+        project.presets = presets
+    }
+    func saveLayer(name: String, presetIDs: [UUID], priority: Int, fadeSeconds: Double) {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, !presetIDs.isEmpty, fadeSeconds.isFinite, (0...3600).contains(fadeSeconds), (0...100).contains(priority), Set(presetIDs).isSubset(of: Set((project.presets ?? []).map(\.id))) else { return }
+        var cues = project.layerCues ?? []
+        cues.append(LayerCue(name: name, presetIDs: presetIDs, priority: priority, fadeSeconds: fadeSeconds))
+        project.layerCues = cues
+    }
+    func activateLayer(id: UUID) {
+        guard let cue = project.layerCues?.first(where: { $0.id == id }) else { return }
+        var values: [UUID: PresetValues] = [:]
+        var effects: [UUID: [Effect]] = [:]
+        for presetID in cue.presetIDs {
+            guard let preset = project.presets?.first(where: { $0.id == presetID }) else { return }
+            for (fixtureID, value) in preset.values {
+                var merged = values[fixtureID] ?? PresetValues(); merged.merge(value); values[fixtureID] = merged
+                if let bundle = preset.effects { effects[fixtureID] = bundle }
+            }
+        }
+        releaseLayer(id: id)
+        layerMixer.layers.append(ActiveLayer(id: id, name: cue.name, priority: cue.priority, started: clock(), fadeSeconds: cue.fadeSeconds, values: values, effects: effects))
+    }
+    func releaseLayer(id: UUID) { layerMixer.layers.removeAll { $0.id == id } }
+    func releaseAllLayers() { layerMixer.layers = [] }
+    func removeLayer(id: UUID) { releaseLayer(id: id); project.layerCues?.removeAll { $0.id == id } }
+    func removePreset(id: UUID) {
+        let dependent = (project.layerCues ?? []).filter { $0.presetIDs.contains(id) }.map(\.id)
+        for layerID in dependent { removeLayer(id: layerID) }
+        project.presets?.removeAll { $0.id == id }
+    }
+    private func takeOverLayers() {
+        guard !layerMixer.layers.isEmpty else { return }
+        fixtureStates = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, state(for: $0.id)) })
+        releaseAllLayers()
+    }
     func setState(id: UUID, state: FixtureState) {
+        takeOverLayers()
         cancelSequence()
         fadeStart = nil
         activeCueID = nil
@@ -126,6 +182,13 @@ import UniformTypeIdentifiers
     }
     func removeFixture(id: UUID) {
         cancelSequence()
+        releaseAllLayers()
+        if var presets = project.presets {
+            for index in presets.indices { presets[index].values.removeValue(forKey: id) }
+            let empty = presets.filter { $0.values.isEmpty }.map(\.id)
+            project.presets = presets
+            for presetID in empty { removePreset(id: presetID) }
+        }
         project.fixtures.removeAll { $0.id == id }
         fixtureStates.removeValue(forKey: id)
         for index in project.cues.indices { project.cues[index].levels.removeValue(forKey: id) }
@@ -147,7 +210,7 @@ import UniformTypeIdentifiers
         applyCue(cue)
     }
     private func applyCue(_ cue: Cue) {
-        fadeFrom = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, state(for: $0.id)) })
+        fadeFrom = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, fixtureStates[$0.id] ?? .off) })
         fadeTo = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, cue.levels[$0.id] ?? .off) })
         fadeDuration = max(0, cue.fadeSeconds.isFinite ? cue.fadeSeconds : 0)
         fadeStart = clock()
@@ -172,6 +235,7 @@ import UniformTypeIdentifiers
         if selectedCueID == id { selectedCueID = project.cues.first?.id }
     }
     func stop() {
+        releaseAllLayers()
         cancelSequence()
         fadeStart = nil
         activeCueID = nil
@@ -247,7 +311,7 @@ import UniformTypeIdentifiers
         var result = state(for: id)
         let index = project.fixtures.firstIndex(where: { $0.id == id }) ?? 0
         let count = max(1, project.fixtures.count)
-        for effect in project.effects where effect.enabled && effect.rate.isFinite && effect.depth.isFinite {
+        for effect in layerMixer.effects(for: id, base: project.effects) where effect.enabled && effect.rate.isFinite && effect.depth.isFinite {
             let position = phase * max(0, effect.rate) + Double(index) / Double(count)
             let depth = min(1, max(0, effect.depth))
             switch effect.kind {
@@ -325,6 +389,7 @@ import UniformTypeIdentifiers
             try next.validate()
             stopOutput()
             cancelSequence()
+            releaseAllLayers()
             project = next
             fadeStart = nil
             activeCueID = nil

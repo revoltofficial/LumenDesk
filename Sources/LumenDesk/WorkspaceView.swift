@@ -26,6 +26,7 @@ struct WorkspaceView: View {
                     modeBar
                     Divider()
                     if mode == "Design" { designControls.frame(height: 230) }
+                    else if mode == "Presets" { PresetWorkspace().frame(height: 230) }
                     else { liveControls.frame(height: 230) }
                 }
                 Divider()
@@ -105,7 +106,7 @@ struct WorkspaceView: View {
                     .accessibilityLabel("Select \(fixture.name)")
                     .accessibilityAddTraits(.isButton)
                     .gesture(DragGesture(coordinateSpace: .named("stage")).onChanged { value in
-                        guard mode == "Design", let i = store.project.fixtures.firstIndex(where: { $0.id == fixture.id }) else { return }
+                        guard mode != "Live", let i = store.project.fixtures.firstIndex(where: { $0.id == fixture.id }) else { return }
                         if !store.selectedFixtureIDs.contains(fixture.id) { store.selectFixture(id: fixture.id) }
                         store.project.fixtures[i].x = min(0.94, max(0.06, value.location.x / geo.size.width))
                         store.project.fixtures[i].y = min(0.82, max(0.16, value.location.y / geo.size.height))
@@ -123,10 +124,10 @@ struct WorkspaceView: View {
 
     private var modeBar: some View {
         HStack {
-            Picker("Workspace", selection: $mode) { Text("Design").tag("Design"); Text("Live").tag("Live") }
-                .pickerStyle(.segmented).frame(width: 180)
+            Picker("Workspace", selection: $mode) { Text("Design").tag("Design"); Text("Live").tag("Live"); Text("Presets").tag("Presets") }
+                .pickerStyle(.segmented).frame(width: 250)
             Spacer()
-            if mode == "Design" {
+            if mode != "Live" {
                 Toggle("Multi-select", isOn: $extendingSelection).toggleStyle(.button)
                 Button(action: store.captureCue) { Label("Capture cue", systemImage: "plus.square") }
             } else {

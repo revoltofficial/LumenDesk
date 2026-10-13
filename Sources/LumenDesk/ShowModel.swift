@@ -72,6 +72,8 @@ struct ShowProject: Codable {
     var destination: String = "127.0.0.1"
     var sequenceSettings: SequenceSettings? = nil
     var fixtureGroups: [FixtureGroup]? = nil
+    var presets: [LookPreset]? = nil
+    var layerCues: [LayerCue]? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -106,6 +108,21 @@ struct ShowProject: Codable {
             for state in cue.levels.values {
                 guard [state.dimmer,state.red,state.green,state.blue,state.white].allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { try fail("Cue levels must be between 0 and 1."); return }
             }
+        }
+        let presets = presets ?? []
+        let layers = layerCues ?? []
+        guard Set(presets.map(\.id)).count == presets.count, Set(layers.map(\.id)).count == layers.count else { try fail("Duplicate preset or layer identifiers."); return }
+        for preset in presets {
+            guard !preset.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !preset.values.isEmpty, Set(preset.values.keys).isSubset(of: fixtureIDs) else { try fail("Invalid preset name or fixtures."); return }
+            for values in preset.values.values {
+                guard values.channels.allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { try fail("Invalid preset levels."); return }
+            }
+            for effect in preset.effects ?? [] {
+                guard effect.rate.isFinite, (0...20).contains(effect.rate), effect.depth.isFinite, (0...1).contains(effect.depth) else { try fail("Invalid preset effect."); return }
+            }
+        }
+        for layer in layers {
+            guard !layer.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !layer.presetIDs.isEmpty, Set(layer.presetIDs).count == layer.presetIDs.count, Set(layer.presetIDs).isSubset(of: Set(presets.map(\.id))), (0...100).contains(layer.priority), layer.fadeSeconds.isFinite, (0...3600).contains(layer.fadeSeconds) else { try fail("Invalid layered cue or preset references."); return }
         }
         for effect in effects {
             guard effect.rate.isFinite, (0...20).contains(effect.rate), effect.depth.isFinite, (0...1).contains(effect.depth) else { try fail("Invalid effect settings."); return }
