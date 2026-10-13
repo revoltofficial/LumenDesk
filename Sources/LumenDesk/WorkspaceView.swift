@@ -4,6 +4,8 @@ import AppKit
 struct WorkspaceView: View {
     @EnvironmentObject var store: LightingStore
     @State private var mode = "Design"
+    @State private var designTab = "Color"
+    @State private var patchProfileID = FixtureProfile.head.id
     @State private var showingPatch = false
     @State private var paletteSearch = ""
     @State private var liveStyle = "Buttons"
@@ -25,7 +27,11 @@ struct WorkspaceView: View {
                     stage.frame(minHeight: 250, maxHeight: .infinity)
                     modeBar
                     Divider()
-                    if mode == "Design" { designControls.frame(height: 230) }
+                    if mode == "Design" {
+                        if designTab == "Position" { MovementControls().frame(height: 230) }
+                        else if designTab == "Beam" { MovementControls(beam: true).frame(height: 230) }
+                        else { designControls.frame(height: 230) }
+                    }
                     else if mode == "Presets" { PresetWorkspace().frame(height: 230) }
                     else { liveControls.frame(height: 230) }
                 }
@@ -79,21 +85,26 @@ struct WorkspaceView: View {
                     context.stroke(Path(roundedRect: rect, cornerRadius: 8), with: .color(.white.opacity(0.12)), lineWidth: 1)
                 }.allowsHitTesting(false)
                 VStack {
-                    HStack { Text("STAGE PREVIEW").tracking(2); Spacer(); Text(mode == "Design" ? "Use Multi-select to choose several" : "Live levels") }
+                    HStack { Text("STAGE PREVIEW").tracking(2); Spacer(); Text(mode == "Live" ? "Live levels" : "Use Multi-select to choose several") }
                     Spacer()
                     Text("AUDIENCE").tracking(5)
                 }.font(.caption2).foregroundStyle(.secondary).padding(20).allowsHitTesting(false)
+                MovingHeadBeams()
                 ForEach(store.project.fixtures) { fixture in
                     let state = store.renderedState(for: fixture.id)
                     let color = Color(red: state.red, green: state.green, blue: state.blue)
                     let x = max(48, min(geo.size.width - 48, fixture.x * geo.size.width))
                     let y = max(58, min(geo.size.height - 68, fixture.y * geo.size.height))
                     ZStack {
-                        Ellipse().fill(color.opacity(state.dimmer * 0.13)).frame(width: 95, height: 135).blur(radius: 12).offset(y: 50)
+                        if !fixture.resolvedProfile.movingHead { Ellipse().fill(color.opacity(state.dimmer * 0.13)).frame(width: 95, height: 135).blur(radius: 12).offset(y: 50) }
                         VStack(spacing: 7) {
-                            Image(systemName: "lightbulb.led.fill").font(.system(size: 24))
-                                .foregroundStyle(color).opacity(0.2 + state.dimmer * 0.8)
-                                .padding(12).background(Color(white: 0.14), in: Circle())
+                            Group {
+                                if fixture.resolvedProfile.movingHead {
+                                    MovingHeadGlyph(pose: HeadPose(state: state, profile: fixture.resolvedProfile), color: color, intensity: state.dimmer)
+                                } else {
+                                    Image(systemName: "lightbulb.led.fill").font(.system(size: 24)).foregroundStyle(color).opacity(0.2 + state.dimmer * 0.8).frame(width: 52, height: 54)
+                                }
+                            }.background(Color(white: 0.14), in: Circle())
                                 .overlay(Circle().stroke(store.selectedFixtureIDs.contains(fixture.id) ? accent : .white.opacity(0.15), lineWidth: 2))
                             Text(fixture.name).font(.caption).lineLimit(1)
                             Text("\(Int(state.dimmer * 100))%").font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
@@ -126,7 +137,10 @@ struct WorkspaceView: View {
         HStack {
             Picker("Workspace", selection: $mode) { Text("Design").tag("Design"); Text("Live").tag("Live"); Text("Presets").tag("Presets") }
                 .pickerStyle(.segmented).frame(width: 250)
-            Spacer()
+            if mode == "Design" {
+                Picker("Fixture controls", selection: $designTab) { Text("Color").tag("Color"); Text("Position").tag("Position"); Text("Beam").tag("Beam") }.pickerStyle(.segmented).frame(width: 210)
+            }
+            Spacer(minLength: 4)
             if mode != "Live" {
                 Toggle("Multi-select", isOn: $extendingSelection).toggleStyle(.button)
                 Button(action: store.captureCue) { Label("Capture cue", systemImage: "plus.square") }
@@ -141,7 +155,7 @@ struct WorkspaceView: View {
             if let fixture = store.selectedFixtures.first {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(store.selectedFixtures.count == 1 ? fixture.name : "\(store.selectedFixtures.count) fixtures selected").font(.headline)
-                    Text(store.selectedFixtures.count == 1 ? "\(fixture.kind.title) · DMX \(fixture.address)–\(fixture.address + fixture.kind.footprint - 1)" : "Changes apply to the selection").font(.caption).foregroundStyle(.secondary)
+                    Text(store.selectedFixtures.count == 1 ? "\(fixture.resolvedProfile.name) · DMX \(fixture.address)–\(fixture.address + fixture.footprint - 1)" : "Changes apply to the selection").font(.caption).foregroundStyle(.secondary)
                     channel("Dimmer", key: \.dimmer)
                     if !store.fixturesSupporting(\.white).isEmpty { channel("White", key: \.white) }
                 }.frame(width: 185)
@@ -388,6 +402,7 @@ struct WorkspaceView: View {
                             case .sine: y = 1 - effect.depth + effect.depth * (sin(x * 4 * .pi) + 1) / 2
                             case .chase: y = Int(x * 6) % 3 == 0 ? 1 : 1 - effect.depth
                             case .rainbow: y = x
+                            case .circle: y = (sin(x * 2 * .pi) + 1) / 2
                             }
                             let p = CGPoint(x: x * size.width, y: (1 - y) * (size.height - 4) + 2)
                             if step == 0 { curve.move(to: p) } else { curve.addLine(to: p) }
@@ -422,15 +437,31 @@ struct WorkspaceView: View {
     private var patchSheet: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack { Text("Patch & Output").font(.title2); Spacer(); Button("Done") { showingPatch = false }.keyboardShortcut(.defaultAction) }
-            HStack { Text("Fixture patch").font(.headline); Spacer(); Button(action: store.addFixture) { Label("Add fixture", systemImage: "plus") } }
+            HStack {
+                Text("Fixture library").font(.headline)
+                Spacer()
+                Button("Import profile…", action: store.importProfile)
+                Button("Add moving-head demo") { store.addMovementDemo(); designTab = "Position"; showingPatch = false }
+            }
+            HStack {
+                Picker("Profile", selection: $patchProfileID) { ForEach(store.profileLibrary) { profile in Text(profile.name).tag(profile.id) } }.frame(maxWidth: 420)
+                Button("Patch fixture") { if let profile = store.profileLibrary.first(where: { $0.id == patchProfileID }) { store.addFixture(profile: profile) } }
+            }
             ScrollView {
                 VStack(spacing: 8) {
                     ForEach($store.project.fixtures) { $fixture in
                         HStack(spacing: 14) {
                             Image(systemName: "lightbulb.led.fill").foregroundStyle(accent)
                             TextField("Fixture name", text: $fixture.name).textFieldStyle(.roundedBorder)
-                            Picker("Type", selection: $fixture.kind) { ForEach(FixtureKind.allCases) { kind in Text(kind.title).tag(kind) } }.labelsHidden().frame(width: 95)
-                            Stepper(value: $fixture.address, in: 1...max(1, 513 - fixture.kind.footprint)) { Text("DMX \(fixture.address)").monospacedDigit().frame(width: 75) }.frame(width: 135)
+                            Picker("Profile", selection: Binding(get: { fixture.resolvedProfile.id }, set: { id in
+                                if let profile = store.profileLibrary.first(where: { $0.id == id }) {
+                                    fixture.profile = profile; fixture.kind = profile.movingHead ? .movingHead : (profile.supports(.white) ? .rgbw : (profile.supports(.red) ? .rgb : .dimmer))
+                                }
+                            })) { ForEach(store.profileLibrary + (store.profileLibrary.contains(where: { $0.id == fixture.resolvedProfile.id }) ? [] : [fixture.resolvedProfile])) { profile in Text(profile.name).tag(profile.id) } }.labelsHidden().frame(width: 220)
+                            if fixture.resolvedProfile.movingHead {
+                                TextField("Height m", value: Binding(get: { fixture.height }, set: { fixture.mountingHeight = $0 }), format: .number).textFieldStyle(.roundedBorder).frame(width: 55).help("Hanging mounting height in metres")
+                            }
+                            Stepper(value: $fixture.address, in: 1...max(1, 513 - fixture.footprint)) { Text("DMX \(fixture.address)").monospacedDigit().frame(width: 75) }.frame(width: 135)
                             Button { store.removeFixture(id: fixture.id) } label: { Image(systemName: "trash") }.buttonStyle(.borderless)
                         }.padding(10).background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
                     }
@@ -445,7 +476,7 @@ struct WorkspaceView: View {
             }
             Text("Use your node’s unicast address. Universe 1 maps to port-address 0. Output stays off until you start it.").font(.caption).foregroundStyle(.secondary)
             if let issue = patchIssue { Label(issue, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(.orange) }
-        }.padding(24).frame(width: 720, height: 480).preferredColorScheme(.dark)
+        }.padding(24).frame(width: 920, height: 560).preferredColorScheme(.dark)
     }
     private var patchIssue: String? {
         do { try store.project.validate(); return nil } catch { return error.localizedDescription }

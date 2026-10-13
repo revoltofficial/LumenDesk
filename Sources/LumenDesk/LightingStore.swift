@@ -34,9 +34,19 @@ import UniformTypeIdentifiers
     func removeGroup(id: UUID) { project.fixtureGroups?.removeAll { $0.id == id } }
     func fixturesSupporting(_ key: WritableKeyPath<FixtureState, Double>) -> [Fixture] {
         selectedFixtures.filter { fixture in
-            if key == \.dimmer { return true }
-            if key == \.white { return fixture.kind == .rgbw }
-            return fixture.kind != .dimmer
+            let attribute: FixtureAttribute
+            switch key {
+            case \.dimmer: return true
+            case \.red: attribute = .red
+            case \.green: attribute = .green
+            case \.blue: attribute = .blue
+            case \.white: attribute = .white
+            case \.pan: attribute = .pan
+            case \.tilt: attribute = .tilt
+            case \.zoom: attribute = .zoom
+            default: attribute = .gobo
+            }
+            return fixture.resolvedProfile.supports(attribute)
         }
     }
     func selectionValue(_ key: WritableKeyPath<FixtureState, Double>) -> Double {
@@ -58,7 +68,7 @@ import UniformTypeIdentifiers
     }
     func setSelectionColor(red: Double, green: Double, blue: Double) {
         guard [red,green,blue].allSatisfy({ $0.isFinite }) else { return }
-        for fixture in selectedFixtures where fixture.kind != .dimmer {
+        for fixture in selectedFixtures where fixture.resolvedProfile.supports(.red) {
             var state = state(for: fixture.id)
             state.red = min(1,max(0,red)); state.green = min(1,max(0,green)); state.blue = min(1,max(0,blue))
             setState(id: fixture.id, state: state)
@@ -114,13 +124,21 @@ import UniformTypeIdentifiers
             let state = state(for: fixture.id)
             var value = PresetValues()
             if kind == .intensity || kind == .look { value.dimmer = state.dimmer }
-            if (kind == .color || kind == .look) && fixture.kind != .dimmer {
+            if (kind == .color || kind == .look) && fixture.resolvedProfile.supports(.red) {
                 value.red = state.red; value.green = state.green; value.blue = state.blue
-                if fixture.kind == .rgbw { value.white = state.white }
+                if fixture.resolvedProfile.supports(.white) { value.white = state.white }
+            }
+            if kind == .position || kind == .look {
+                if fixture.resolvedProfile.supports(.pan) { value.pan = state.pan }
+                if fixture.resolvedProfile.supports(.tilt) { value.tilt = state.tilt }
+            }
+            if kind == .beam || kind == .look {
+                if fixture.resolvedProfile.supports(.zoom) { value.zoom = state.zoom }
+                if fixture.resolvedProfile.supports(.gobo) { value.gobo = state.gobo }
             }
             if !value.channels.isEmpty || kind == .effects { values[fixture.id] = value }
         }
-        guard !values.isEmpty else { errorMessage = "Select color fixtures to capture a color preset."; return }
+        guard !values.isEmpty else { errorMessage = "The selected fixtures do not support this preset category."; return }
         let effects = kind == .effects || kind == .look ? project.effects.filter { $0.enabled } : nil
         var presets = project.presets ?? []
         presets.append(LookPreset(name: name, kind: kind, values: values, effects: effects))
@@ -167,18 +185,59 @@ import UniformTypeIdentifiers
         activeCueID = nil
         fixtureStates[id] = state
     }
-    func addFixture() {
+    var profileLibrary: [FixtureProfile] { FixtureProfile.library + (project.fixtureProfiles ?? []) }
+    func addFixture() { addFixture(profile: .rgb) }
+    func addFixture(profile: FixtureProfile) {
         var used = Set<Int>()
-        for fixture in project.fixtures where fixture.address >= 1 && fixture.address <= 513 - fixture.kind.footprint {
-            used.formUnion(fixture.address..<(fixture.address + fixture.kind.footprint))
+        for fixture in project.fixtures where fixture.address >= 1 && fixture.address <= 513 - fixture.footprint {
+            used.formUnion(fixture.address..<(fixture.address + fixture.footprint))
         }
-        guard let address = (1...510).first(where: { start in (start..<(start + 3)).allSatisfy { !used.contains($0) } }) else {
-            errorMessage = "There are no three adjacent free DMX channels."; return
+        guard let address = (1...(513 - profile.footprint)).first(where: { start in (start..<(start + profile.footprint)).allSatisfy { !used.contains($0) } }) else { errorMessage = "No contiguous channels are available for this profile."; return }
+        let kind: FixtureKind = profile.movingHead ? .movingHead : (profile.supports(.white) ? .rgbw : (profile.supports(.red) ? .rgb : .dimmer))
+        let fixture = Fixture(name: "\(profile.movingHead ? "Head" : "Fixture") \(project.fixtures.count + 1)", kind: kind, address: address, x: 0.5, y: 0.3, profile: profile)
+        project.fixtures.append(fixture); fixtureStates[fixture.id] = .off; selectedFixtureID = fixture.id
+    }
+    func importProfile() {
+        let panel = NSOpenPanel(); panel.allowedContentTypes = [.json]; panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            guard (try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= 1024 * 1024 else { throw ProjectError.invalid("Profiles must be smaller than 1 MiB.") }
+            let profile = try JSONDecoder().decode(FixtureProfile.self, from: Data(contentsOf: url))
+            try profile.validate()
+            guard !profileLibrary.contains(where: { $0.id == profile.id }) else { throw ProjectError.invalid("That profile identifier is already in the library.") }
+            var profiles = project.fixtureProfiles ?? []; profiles.append(profile); project.fixtureProfiles = profiles
+        } catch { errorMessage = error.localizedDescription }
+    }
+    func setSelectionPosition(pan: Double, tilt: Double) {
+        guard pan.isFinite, tilt.isFinite else { return }
+        for fixture in selectedFixtures where fixture.resolvedProfile.movingHead {
+            var value = state(for: fixture.id); value.pan = min(1, max(0, pan)); value.tilt = min(1, max(0, tilt)); setState(id: fixture.id, state: value)
         }
-        let fixture = Fixture(name: "Wash \(project.fixtures.count + 1)", kind: .rgb, address: address)
-        project.fixtures.append(fixture)
-        fixtureStates[fixture.id] = .off
-        selectedFixtureID = fixture.id
+    }
+    func setGobo(id: UUID, index: Int) {
+        guard let fixture = project.fixtures.first(where: { $0.id == id }), fixture.resolvedProfile.gobos.indices.contains(index) else { return }
+        var value = state(for: id); value.gobo = Double(index) / Double(max(1, fixture.resolvedProfile.gobos.count - 1)); setState(id: id, state: value)
+    }
+    func addMovementDemo() {
+        // Adds original generic fixtures and movement cues without replacing the existing show.
+        let before = Set(project.fixtures.map(\.id))
+        addFixture(profile: .head); addFixture(profile: .head)
+        let indices = project.fixtures.indices.filter { !before.contains(project.fixtures[$0].id) }
+        guard !indices.isEmpty else { return }
+        for (offset, index) in indices.enumerated() {
+            project.fixtures[index].name = "Moving head \(offset + 1)"
+            project.fixtures[index].x = offset == 0 ? 0.3 : 0.7; project.fixtures[index].y = 0.2
+        }
+        let ids = Set(indices.map { project.fixtures[$0].id }); selectedFixtureIDs = ids
+        var left = fixtureStates, right = fixtureStates
+        for (offset, index) in indices.enumerated() {
+            let id = project.fixtures[index].id
+            left[id] = FixtureState(dimmer: 0.8, red: 0.2, green: 0.7, blue: 1, pan: offset == 0 ? 0.43 : 0.57, tilt: 0.65, zoom: 0.25)
+            right[id] = FixtureState(dimmer: 0.8, red: 1, green: 0.35, blue: 0.1, pan: offset == 0 ? 0.57 : 0.43, tilt: 0.7, zoom: 0.65, gobo: 2.0 / 3.0)
+        }
+        let cue = Cue(name: "Heads · left", fadeSeconds: 4, levels: left)
+        project.cues.append(cue); project.cues.append(Cue(name: "Heads · right", fadeSeconds: 4, levels: right))
+        activateCue(id: cue.id)
     }
     func removeFixture(id: UUID) {
         cancelSequence()
@@ -315,6 +374,11 @@ import UniformTypeIdentifiers
             let position = phase * max(0, effect.rate) + Double(index) / Double(count)
             let depth = min(1, max(0, effect.depth))
             switch effect.kind {
+            case .circle:
+                if project.fixtures.first(where: { $0.id == id })?.resolvedProfile.movingHead == true {
+                    result.pan = min(1, max(0, result.pan + sin(position * 2 * .pi) * 0.18 * depth))
+                    result.tilt = min(1, max(0, result.tilt + cos(position * 2 * .pi) * 0.12 * depth))
+                }
             case .sine: result.dimmer *= 1 - depth + depth * (sin(position * 2 * .pi) + 1) / 2
             case .chase:
                 let step = Int((phase * max(0, effect.rate)).truncatingRemainder(dividingBy: Double(count)))
@@ -334,16 +398,9 @@ import UniformTypeIdentifiers
         var values = [UInt8](repeating: 0, count: 512)
         // Invalid live edits silence output instead of sending overlapping patches.
         guard (try? project.validate()) != nil else { return values }
-        func byte(_ value: Double) -> UInt8 { UInt8((min(1, max(0, value.isFinite ? value : 0)) * 255).rounded()) }
         for fixture in project.fixtures {
-            let state = renderedState(for: fixture.id)
-            let channels: [Double]
-            switch fixture.kind {
-            case .dimmer: channels = [state.dimmer]
-            case .rgb: channels = [state.red * state.dimmer,state.green * state.dimmer,state.blue * state.dimmer]
-            case .rgbw: channels = [state.red * state.dimmer,state.green * state.dimmer,state.blue * state.dimmer,state.white * state.dimmer]
-            }
-            for (offset, level) in channels.enumerated() { values[fixture.address - 1 + offset] = byte(level) }
+            let channels = fixture.resolvedProfile.bytes(for: renderedState(for: fixture.id))
+            for (offset, level) in channels.enumerated() { values[fixture.address - 1 + offset] = level }
         }
         return values
     }

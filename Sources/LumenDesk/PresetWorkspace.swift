@@ -32,7 +32,7 @@ struct PresetWorkspace: View {
                             }
                         }
                         if (store.project.presets ?? []).isEmpty {
-                            Text("Select fixtures, design a look, then capture its color, intensity, or effects.").font(.caption).foregroundStyle(.secondary)
+                            Text("Select fixtures, design a look, then capture its color, intensity, position, beam, or effects.").font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -81,7 +81,7 @@ struct PresetWorkspace: View {
             Text("Capture preset").font(.title2)
             TextField("Preset name", text: $name).textFieldStyle(.roundedBorder)
             Picker("Capture", selection: $kind) { ForEach(PresetKind.allCases) { kind in Text(kind.title).tag(kind) } }
-            Text("Applies to \(store.selectedFixtures.count) selected fixtures. Color leaves intensity untouched. Effects captures the enabled global effects; Look captures levels and effects.").font(.caption).foregroundStyle(.secondary)
+            Text("Applies to \(store.selectedFixtures.count) selected fixtures. Position saves pan/tilt. Beam saves zoom/gobo. Color leaves intensity untouched. Effects captures the enabled global effects; Look captures levels and effects.").font(.caption).foregroundStyle(.secondary)
             HStack {
                 Spacer()
                 Button("Cancel") { capturing = false }.keyboardShortcut(.cancelAction)

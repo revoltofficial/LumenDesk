@@ -1,7 +1,7 @@
 import Foundation
 
 enum PresetKind: String, Codable, CaseIterable, Identifiable {
-    case intensity, color, effects, look
+    case intensity, color, position, beam, effects, look
     var id: String { rawValue }
     var title: String { rawValue.capitalized }
 }
@@ -12,7 +12,11 @@ struct PresetValues: Codable, Equatable {
     var green: Double?
     var blue: Double?
     var white: Double?
-    var channels: [Double] { [dimmer, red, green, blue, white].compactMap { $0 } }
+    var pan: Double?
+    var tilt: Double?
+    var zoom: Double?
+    var gobo: Double?
+    var channels: [Double] { [dimmer, red, green, blue, white, pan, tilt, zoom, gobo].compactMap { $0 } }
     func applying(to state: FixtureState, fraction: Double = 1) -> FixtureState {
         var result = state
         let t = min(1, max(0, fraction))
@@ -25,9 +29,13 @@ struct PresetValues: Codable, Equatable {
         result.dimmer = mix(state.dimmer, dimmer)
         result.red = mix(state.red, red); result.green = mix(state.green, green)
         result.blue = mix(state.blue, blue); result.white = mix(state.white, white)
+        result.pan = mix(state.pan, pan); result.tilt = mix(state.tilt, tilt); result.zoom = mix(state.zoom, zoom)
+        if t >= 1, let gobo { result.gobo = gobo }
         return result
     }
     mutating func merge(_ other: Self) {
+        if let value = other.pan { pan = value }; if let value = other.tilt { tilt = value }
+        if let value = other.zoom { zoom = value }; if let value = other.gobo { gobo = value }
         if let value = other.dimmer { dimmer = value }
         if let value = other.red { red = value }; if let value = other.green { green = value }
         if let value = other.blue { blue = value }; if let value = other.white { white = value }
