@@ -4,7 +4,7 @@ Original SwiftUI source prototype, version 0.1. The working name is LumenDesk. I
 
 ## Current build status
 
-Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group build passed all 18 tests and local selection/group UI checks; details are recorded in VALIDATION.md. The presets/layers build passed all 25 tests and local capture, composition, activation and release checks. Hardware output remains untested.
+Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group build passed all 18 tests and local selection/group UI checks; details are recorded in VALIDATION.md. The presets/layers build passed all 25 tests and local capture, composition, activation and release checks. The moving-head build passed all 34 tests plus local sweep, upward-tilt, zoom, profile-import and legacy-show checks. Hardware output remains untested.
 
 ## Implemented in source
 
@@ -72,3 +72,12 @@ The generic 11-channel profile is an original demonstration mode: pan coarse/fin
 The preview is a schematic top-down 12×8 metre floor with hanging heads (default height 3m, editable in Patch). Center pan faces the audience; center tilt points down. Head/yoke pose and cone intersection use the same rendered attributes as output. Full pan travel is linear across cues, not shortest-path circular rotation. Zoom changes the cone opening angle. Above-horizon rays have no floor spot; cones straddling the horizon have no bounded ellipse and are omitted. Gobo changes occur at the end of cue/preset fades and use original approximate patterns. This is not a calibrated photometric simulation: motor inertia, collision/occlusion, real gobo artwork and gobo rotation are not simulated. Blackout gates intensity while retaining movement channel values.
 
 See FIXTURE-PROFILES.md for the import format. Imported library entries and each patched fixture’s profile snapshot are saved in the show. Older shows default movement attributes to center and retain their previous RGB channel maps.
+
+### Try the movement demo
+
+1. Open Moving-heads-demo.lumendesk.json from the folder beside the app, or use Patch & Output → Add moving-head demo.
+2. Activate Heads · left, then Heads · right in the cue inspector to watch the four-second sweeps.
+3. Select a head and choose Design → Position. Drag the pad, or use Center and Aim forward. Choose Beam to change zoom and gobo.
+4. In Live, Effects → Pan / Tilt orbit animates the moving heads. Keep output off while exploring.
+
+The demo contains the two original movement cue definitions; current live edits and active playback are not saved. It is intended for preview, not a substitute for a hardware fixture’s exact channel map.

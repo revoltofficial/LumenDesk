@@ -196,6 +196,9 @@ import UniformTypeIdentifiers
         let kind: FixtureKind = profile.movingHead ? .movingHead : (profile.supports(.white) ? .rgbw : (profile.supports(.red) ? .rgb : .dimmer))
         let fixture = Fixture(name: "\(profile.movingHead ? "Head" : "Fixture") \(project.fixtures.count + 1)", kind: kind, address: address, x: 0.5, y: 0.3, profile: profile)
         project.fixtures.append(fixture); fixtureStates[fixture.id] = .off; selectedFixtureID = fixture.id
+        if profile.movingHead && !project.effects.contains(where: { $0.kind == .circle }) {
+            project.effects.append(Effect(name: "Pan / Tilt orbit", kind: .circle))
+        }
     }
     func importProfile() {
         let panel = NSOpenPanel(); panel.allowedContentTypes = [.json]; panel.allowsMultipleSelection = false

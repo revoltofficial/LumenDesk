@@ -101,6 +101,15 @@ final class MovingHeadTests: XCTestCase {
         store.project.fixtures[1].address = 502
         XCTAssertNoThrow(try store.project.validate())
     }
+    @MainActor func testPatchingAHeadAddsMovementControlToLegacyShowsOnce() {
+        let store = LightingStore(startTimer: false)
+        store.project.effects.removeAll { $0.kind == .circle }
+        let originalEffects = store.project.effects.map(\.id)
+        store.addFixture(profile: .head); store.addFixture(profile: .head)
+        XCTAssertEqual(store.project.effects.filter { $0.kind == .circle }.count, 1)
+        XCTAssertEqual(Array(store.project.effects.prefix(originalEffects.count)).map(\.id), originalEffects)
+        XCTAssertFalse(store.project.effects.last!.enabled)
+    }
     @MainActor func testMotionPresetsAndOrbitIsolation() throws {
         let store = LightingStore(startTimer: false)
         store.project = ShowProject(); store.addFixture(profile: .rgb); store.addFixture(profile: .head)
