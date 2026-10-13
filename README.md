@@ -4,7 +4,7 @@ Original SwiftUI source prototype, version 0.1. The working name is LumenDesk. I
 
 ## Current build status
 
-Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group update adds four regression tests; its verification is recorded in VALIDATION.md. Hardware output remains untested.
+Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group build passed all 18 tests and local selection/group UI checks; details are recorded in VALIDATION.md. Hardware output remains untested.
 
 ## Implemented in source
 
@@ -51,6 +51,6 @@ Open Live and click Run sequence. Each cue fades for its Fade duration, then hol
 
 ## Fixture groups and selection
 
-Command-click or Shift-click fixture icons to add/remove them from the selection. Select all and Clear are in the Fixture Groups area. Its + button opens a named group editor with a checkbox per fixture. Click a saved group to recall its members; its menu edits its name/membership, replaces membership with the current selection, or deletes it. Groups save in show files; older shows load with no groups. Removing a fixture removes it from all groups, and empty groups are removed.
+Turn on Multi-select in Design, then click fixture icons to add/remove them from the selection. Modifier-key selection is also present, but was not confirmed through native automation. Select all and Clear are in the Fixture Groups area. Its + button opens a named group editor with a checkbox per fixture. Click a saved group to recall its members; its menu edits its name/membership, replaces membership with the current selection, or deletes it. Groups save in show files; older shows load with no groups. Removing a fixture removes it from all groups, and empty groups are removed.
 
 Dimmer affects every selected fixture. RGB controls affect only RGB/RGBW fixtures; White affects RGBW fixtures only. Changing one channel preserves other channels and unselected fixtures. Mixed channel values are labelled Mixed; sliders show their average until set to a shared absolute level. Color picking and favorites preserve intensity. Manual level edits cancel timed playback as before. Selection alone does not change light output. Fixture dragging still moves one fixture at a time.

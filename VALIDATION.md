@@ -37,3 +37,11 @@ Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38428995234
 Build 38430129557 compiled commit b5b791b34f30278e9bcd29f12c14c78c33ef5df3 for Apple Silicon. All 14 XCTest tests passed; the downloaded app passed signature verification. Local UI checks confirmed Run, Pause (53.3 seconds remained fixed across observations), Resume (countdown continued), and Stop (sequence controls reset and all preview fixtures reached 0%). Art-Net output stayed off. Hardware output remains untested.
 
 Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38430129557
+
+## Fixture groups — 2026-10-13
+
+Final build 38433123861 compiled commit 14713a5266db1c82310c37032fe2e2604385b1d5. All 18 tests passed. Local checks confirmed the Multi-select toggle adds fixtures; different RGB values display Mixed; changing Dimmer updates the selected three fixtures to 70%; saving Front lights stores three members; Clear followed by group recall restores all three. Group editor checkboxes and color favorites were also checked on the preceding group build. Output stayed off.
+
+The delivered app uses local.lumendesk.groups as its bundle identifier so it can open alongside earlier prototypes. It was ad-hoc re-signed locally after this metadata change and passed codesign verification. Native automation did not confirm modifier-key selection; the visible Multi-select toggle is the verified interaction. Fixture movement still affects one fixture at a time. Hardware output remains untested.
+
+Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38433123861
