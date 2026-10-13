@@ -27,6 +27,11 @@ struct FixtureState: Codable, Equatable {
         return Self(dimmer: mix(dimmer, other.dimmer), red: mix(red, other.red), green: mix(green, other.green), blue: mix(blue, other.blue), white: mix(white, other.white))
     }
 }
+struct FixtureGroup: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var fixtureIDs: Set<UUID>
+}
 struct Cue: Identifiable, Codable {
     var id = UUID()
     var name: String
@@ -66,6 +71,7 @@ struct ShowProject: Codable {
     var universe: Int = 1
     var destination: String = "127.0.0.1"
     var sequenceSettings: SequenceSettings? = nil
+    var fixtureGroups: [FixtureGroup]? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -81,6 +87,12 @@ struct ShowProject: Codable {
         guard !destination.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { try fail("Enter an output destination."); return }
         guard Set(fixtures.map(\.id)).count == fixtures.count, Set(cues.map(\.id)).count == cues.count, Set(effects.map(\.id)).count == effects.count else { try fail("Duplicate identifiers in the project."); return }
         var occupied = Set<Int>()
+        let fixtureIDs = Set(fixtures.map(\.id))
+        let groups = fixtureGroups ?? []
+        guard Set(groups.map(\.id)).count == groups.count else { try fail("Duplicate fixture group identifiers."); return }
+        for group in groups {
+            guard !group.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, group.fixtureIDs.isSubset(of: fixtureIDs) else { try fail("Invalid fixture group name or members."); return }
+        }
         for fixture in fixtures {
             guard fixture.address >= 1, fixture.address <= 513 - fixture.kind.footprint else { try fail("\(fixture.name) extends outside DMX channels 1–512."); return }
             guard fixture.x.isFinite, fixture.y.isFinite else { try fail("Invalid fixture position."); return }

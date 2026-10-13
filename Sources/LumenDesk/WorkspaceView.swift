@@ -9,6 +9,10 @@ struct WorkspaceView: View {
     @State private var liveStyle = "Buttons"
     @State private var showEffects = false
     @State private var confirmUpdate = false
+    @State private var showingGroupEditor = false
+    @State private var editingGroupID: UUID?
+    @State private var groupName = ""
+    @State private var groupMembers: Set<UUID> = []
     private let accent = Color(red: 0.43, green: 0.86, blue: 0.78)
 
     var body: some View {
@@ -39,6 +43,7 @@ struct WorkspaceView: View {
         }
         .background(Color(white: 0.10))
         .sheet(isPresented: $showingPatch) { patchSheet }
+        .sheet(isPresented: $showingGroupEditor) { groupEditor }
         .confirmationDialog("Replace the selected cue with the current fixture levels?", isPresented: $confirmUpdate) {
             Button("Update cue", action: store.updateSelectedCue)
         }
@@ -72,7 +77,7 @@ struct WorkspaceView: View {
                     context.stroke(Path(roundedRect: rect, cornerRadius: 8), with: .color(.white.opacity(0.12)), lineWidth: 1)
                 }.allowsHitTesting(false)
                 VStack {
-                    HStack { Text("STAGE PREVIEW").tracking(2); Spacer(); Text(mode == "Design" ? "Drag to arrange" : "Live levels") }
+                    HStack { Text("STAGE PREVIEW").tracking(2); Spacer(); Text(mode == "Design" ? "⌘ / Shift-click to select more" : "Live levels") }
                     Spacer()
                     Text("AUDIENCE").tracking(5)
                 }.font(.caption2).foregroundStyle(.secondary).padding(20).allowsHitTesting(false)
@@ -87,17 +92,20 @@ struct WorkspaceView: View {
                             Image(systemName: "lightbulb.led.fill").font(.system(size: 24))
                                 .foregroundStyle(color).opacity(0.2 + state.dimmer * 0.8)
                                 .padding(12).background(Color(white: 0.14), in: Circle())
-                                .overlay(Circle().stroke(store.selectedFixtureID == fixture.id ? accent : .white.opacity(0.15), lineWidth: 2))
+                                .overlay(Circle().stroke(store.selectedFixtureIDs.contains(fixture.id) ? accent : .white.opacity(0.15), lineWidth: 2))
                             Text(fixture.name).font(.caption).lineLimit(1)
                             Text("\(Int(state.dimmer * 100))%").font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
                         }
                     }
                     .frame(width: 96, height: 110).contentShape(Rectangle())
                     .position(x: x, y: y)
-                    .onTapGesture { store.selectedFixtureID = fixture.id }
+                    .onTapGesture { store.selectFixture(id: fixture.id, extending: NSEvent.modifierFlags.contains(.command) || NSEvent.modifierFlags.contains(.shift)) }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Select \(fixture.name)")
+                    .accessibilityAddTraits(.isButton)
                     .gesture(DragGesture(coordinateSpace: .named("stage")).onChanged { value in
                         guard mode == "Design", let i = store.project.fixtures.firstIndex(where: { $0.id == fixture.id }) else { return }
-                        store.selectedFixtureID = fixture.id
+                        if !store.selectedFixtureIDs.contains(fixture.id) { store.selectFixture(id: fixture.id) }
                         store.project.fixtures[i].x = min(0.94, max(0.06, value.location.x / geo.size.width))
                         store.project.fixtures[i].y = min(0.82, max(0.16, value.location.y / geo.size.height))
                     })
@@ -127,40 +135,35 @@ struct WorkspaceView: View {
 
     private var designControls: some View {
         HStack(alignment: .top, spacing: 22) {
-            if let id = store.selectedFixtureID, let fixture = store.project.fixtures.first(where: { $0.id == id }) {
+            if let fixture = store.selectedFixtures.first {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text(fixture.name).font(.headline)
-                    Text("\(fixture.kind.title) · DMX \(fixture.address)–\(fixture.address + fixture.kind.footprint - 1)").font(.caption).foregroundStyle(.secondary)
-                    channel("Dimmer", id: id, key: \.dimmer)
-                    if fixture.kind == .rgbw { channel("White", id: id, key: \.white) }
+                    Text(store.selectedFixtures.count == 1 ? fixture.name : "\(store.selectedFixtures.count) fixtures selected").font(.headline)
+                    Text(store.selectedFixtures.count == 1 ? "\(fixture.kind.title) · DMX \(fixture.address)–\(fixture.address + fixture.kind.footprint - 1)" : "Changes apply to the selection").font(.caption).foregroundStyle(.secondary)
+                    channel("Dimmer", key: \.dimmer)
+                    if !store.fixturesSupporting(\.white).isEmpty { channel("White", key: \.white) }
                 }.frame(width: 185)
-                if fixture.kind != .dimmer {
+                if !store.fixturesSupporting(\.red).isEmpty {
                     Divider()
                     VStack(alignment: .leading, spacing: 12) {
                         ColorPicker("Color", selection: Binding(get: {
-                            let s = store.state(for: id)
-                            return Color(red: s.red, green: s.green, blue: s.blue)
+                            return Color(red: store.selectionValue(\.red), green: store.selectionValue(\.green), blue: store.selectionValue(\.blue))
                         }, set: { color in
                             guard let c = NSColor(color).usingColorSpace(.deviceRGB) else { return }
-                            var s = store.state(for: id)
-                            s.red = Double(c.redComponent); s.green = Double(c.greenComponent); s.blue = Double(c.blueComponent)
-                            store.setState(id: id, state: s)
+                            store.setSelectionColor(red: Double(c.redComponent), green: Double(c.greenComponent), blue: Double(c.blueComponent))
                         }), supportsOpacity: false)
                         HStack(spacing: 8) {
                             ForEach(0..<8) { index in
                                 let colors: [Color] = [.white, .red, .orange, .yellow, .green, .cyan, .blue, .purple]
                                 Button {
                                     guard let c = NSColor(colors[index]).usingColorSpace(.deviceRGB) else { return }
-                                    var s = store.state(for: id)
-                                    s.red = Double(c.redComponent); s.green = Double(c.greenComponent); s.blue = Double(c.blueComponent)
-                                    store.setState(id: id, state: s)
+                                    store.setSelectionColor(red: Double(c.redComponent), green: Double(c.greenComponent), blue: Double(c.blueComponent))
                                 } label: { Circle().fill(colors[index]).frame(width: 21, height: 21).overlay(Circle().stroke(.white.opacity(0.3))) }
                                 .buttonStyle(.plain).help(["White", "Red", "Amber", "Yellow", "Green", "Cyan", "Blue", "Purple"][index])
                             }
                         }
-                        channel("Red", id: id, key: \.red)
-                        channel("Green", id: id, key: \.green)
-                        channel("Blue", id: id, key: \.blue)
+                        channel("Red", key: \.red)
+                        channel("Green", key: \.green)
+                        channel("Blue", key: \.blue)
                     }.frame(maxWidth: 280)
                 }
                 Spacer(minLength: 0)
@@ -168,17 +171,93 @@ struct WorkspaceView: View {
         }.padding(18)
     }
 
-    private func channel(_ title: String, id: UUID, key: WritableKeyPath<FixtureState, Double>) -> some View {
+    private func channel(_ title: String, key: WritableKeyPath<FixtureState, Double>) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            HStack { Text(title); Spacer(); Text("\(Int(store.state(for: id)[keyPath: key] * 100))%").monospacedDigit().foregroundStyle(.secondary) }.font(.caption)
-            Slider(value: Binding(get: { store.state(for: id)[keyPath: key] }, set: { value in
-                var state = store.state(for: id); state[keyPath: key] = value; store.setState(id: id, state: state)
-            }), in: 0...1).tint(accent)
+            HStack {
+                Text(title); Spacer()
+                Text(store.selectionIsMixed(key) ? "Mixed" : "\(Int(store.selectionValue(key) * 100))%")
+                    .monospacedDigit().foregroundStyle(.secondary)
+            }.font(.caption)
+            Slider(value: Binding(get: { store.selectionValue(key) }, set: { store.setSelectionValue(key, value: $0) }), in: 0...1).tint(accent)
+                .accessibilityLabel("Selection \(title)")
         }
+    }
+
+    private func editGroup(_ group: FixtureGroup? = nil) {
+        editingGroupID = group?.id
+        groupName = group?.name ?? "Group \((store.project.fixtureGroups ?? []).count + 1)"
+        groupMembers = group?.fixtureIDs ?? store.selectedFixtureIDs
+        showingGroupEditor = true
+    }
+    private var groupControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("FIXTURE GROUPS").font(.caption2).tracking(2)
+                Spacer()
+                Button { editGroup() } label: { Image(systemName: "plus") }.buttonStyle(.borderless).help("Save selection as a group")
+            }
+            HStack {
+                Button("Select all", action: store.selectAllFixtures)
+                Button("Clear") { store.selectedFixtureIDs = [] }
+                Spacer()
+                Text("\(store.selectedFixtures.count) selected").font(.caption2).foregroundStyle(.secondary)
+            }.font(.caption).buttonStyle(.borderless)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 5) {
+                    ForEach(store.project.fixtureGroups ?? []) { group in
+                        HStack {
+                            Button { store.selectGroup(id: group.id) } label: {
+                                HStack {
+                                    Image(systemName: "lightbulb.2")
+                                    Text(group.name).lineLimit(1)
+                                    Spacer()
+                                    Text("\(group.fixtureIDs.count)").foregroundStyle(.secondary)
+                                }.padding(7).background(store.selectedFixtureIDs == group.fixtureIDs ? accent.opacity(0.14) : .clear, in: RoundedRectangle(cornerRadius: 6))
+                            }.buttonStyle(.plain)
+                            Menu {
+                                Button("Edit group…") { editGroup(group) }
+                                Button("Use current selection") { store.saveGroup(id: group.id, name: group.name, members: store.selectedFixtureIDs) }
+                                    .disabled(store.selectedFixtureIDs.isEmpty)
+                                Button("Delete group", role: .destructive) { store.removeGroup(id: group.id) }
+                            } label: { Image(systemName: "ellipsis") }.menuStyle(.borderlessButton).frame(width: 18)
+                        }
+                    }
+                    if (store.project.fixtureGroups ?? []).isEmpty {
+                        Text("Select fixtures, then + to save a group.").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }.frame(height: 110)
+        }
+    }
+    private var groupEditor: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(editingGroupID == nil ? "New fixture group" : "Edit fixture group").font(.title2)
+            TextField("Group name", text: $groupName).textFieldStyle(.roundedBorder)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(store.project.fixtures) { fixture in
+                        Toggle(fixture.name, isOn: Binding(get: { groupMembers.contains(fixture.id) }, set: { included in
+                            if included { groupMembers.insert(fixture.id) } else { groupMembers.remove(fixture.id) }
+                        }))
+                    }
+                }.frame(maxWidth: .infinity, alignment: .leading)
+            }
+            HStack {
+                Text("\(groupMembers.count) members").font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button("Cancel") { showingGroupEditor = false }.keyboardShortcut(.cancelAction)
+                Button("Save group") {
+                    store.saveGroup(id: editingGroupID, name: groupName, members: groupMembers)
+                    showingGroupEditor = false
+                }.disabled(groupName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || groupMembers.isEmpty).keyboardShortcut(.defaultAction)
+            }
+        }.padding(24).frame(width: 420, height: 390).preferredColorScheme(.dark)
     }
 
     private var palette: some View {
         VStack(alignment: .leading, spacing: 12) {
+            groupControls
+            Divider()
             HStack { Text("LOOK PALETTE").font(.caption).tracking(2); Spacer(); Button(action: store.captureCue) { Image(systemName: "plus") }.buttonStyle(.borderless).help("Capture current look") }
             TextField("Find a cue", text: $paletteSearch).textFieldStyle(.roundedBorder)
             ScrollView {

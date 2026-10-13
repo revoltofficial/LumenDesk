@@ -4,7 +4,66 @@ import UniformTypeIdentifiers
 
 @MainActor final class LightingStore: ObservableObject {
     @Published var project = ShowProject.demo
-    @Published var selectedFixtureID: UUID?
+    @Published var selectedFixtureIDs: Set<UUID> = []
+    var selectedFixtureID: UUID? {
+        get { project.fixtures.first(where: { selectedFixtureIDs.contains($0.id) })?.id }
+        set { selectedFixtureIDs = newValue.map { Set([$0]) } ?? [] }
+    }
+    var selectedFixtures: [Fixture] { project.fixtures.filter { selectedFixtureIDs.contains($0.id) } }
+    func selectFixture(id: UUID, extending: Bool = false) {
+        guard project.fixtures.contains(where: { $0.id == id }) else { return }
+        if extending {
+            if selectedFixtureIDs.contains(id) { selectedFixtureIDs.remove(id) } else { selectedFixtureIDs.insert(id) }
+        } else { selectedFixtureIDs = [id] }
+    }
+    func selectAllFixtures() { selectedFixtureIDs = Set(project.fixtures.map(\.id)) }
+    func selectGroup(id: UUID) {
+        guard let group = project.fixtureGroups?.first(where: { $0.id == id }) else { return }
+        selectedFixtureIDs = group.fixtureIDs.intersection(Set(project.fixtures.map(\.id)))
+    }
+    func saveGroup(id: UUID?, name: String, members: Set<UUID>) {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let members = members.intersection(Set(project.fixtures.map(\.id)))
+        guard !name.isEmpty, !members.isEmpty else { return }
+        var groups = project.fixtureGroups ?? []
+        if let id, let index = groups.firstIndex(where: { $0.id == id }) {
+            groups[index].name = name; groups[index].fixtureIDs = members
+        } else { groups.append(FixtureGroup(name: name, fixtureIDs: members)) }
+        project.fixtureGroups = groups
+    }
+    func removeGroup(id: UUID) { project.fixtureGroups?.removeAll { $0.id == id } }
+    func fixturesSupporting(_ key: WritableKeyPath<FixtureState, Double>) -> [Fixture] {
+        selectedFixtures.filter { fixture in
+            if key == \.dimmer { return true }
+            if key == \.white { return fixture.kind == .rgbw }
+            return fixture.kind != .dimmer
+        }
+    }
+    func selectionValue(_ key: WritableKeyPath<FixtureState, Double>) -> Double {
+        let fixtures = fixturesSupporting(key)
+        guard !fixtures.isEmpty else { return 0 }
+        return fixtures.reduce(0) { $0 + state(for: $1.id)[keyPath: key] } / Double(fixtures.count)
+    }
+    func selectionIsMixed(_ key: WritableKeyPath<FixtureState, Double>) -> Bool {
+        let values = fixturesSupporting(key).map { state(for: $0.id)[keyPath: key] }
+        return (values.max() ?? 0) - (values.min() ?? 0) > 0.001
+    }
+    func setSelectionValue(_ key: WritableKeyPath<FixtureState, Double>, value: Double) {
+        guard value.isFinite else { return }
+        for fixture in fixturesSupporting(key) {
+            var state = state(for: fixture.id)
+            state[keyPath: key] = min(1, max(0, value))
+            setState(id: fixture.id, state: state)
+        }
+    }
+    func setSelectionColor(red: Double, green: Double, blue: Double) {
+        guard [red,green,blue].allSatisfy({ $0.isFinite }) else { return }
+        for fixture in selectedFixtures where fixture.kind != .dimmer {
+            var state = state(for: fixture.id)
+            state.red = min(1,max(0,red)); state.green = min(1,max(0,green)); state.blue = min(1,max(0,blue))
+            setState(id: fixture.id, state: state)
+        }
+    }
     @Published var selectedCueID: UUID?
     @Published var master: Double = 1
     @Published var blackout = false
@@ -70,7 +129,12 @@ import UniformTypeIdentifiers
         project.fixtures.removeAll { $0.id == id }
         fixtureStates.removeValue(forKey: id)
         for index in project.cues.indices { project.cues[index].levels.removeValue(forKey: id) }
-        if selectedFixtureID == id { selectedFixtureID = project.fixtures.first?.id }
+        selectedFixtureIDs.remove(id)
+        if var groups = project.fixtureGroups {
+            for index in groups.indices { groups[index].fixtureIDs.remove(id) }
+            groups.removeAll { $0.fixtureIDs.isEmpty }
+            project.fixtureGroups = groups
+        }
     }
     func captureCue() {
         let cue = Cue(name: "Scene \(project.cues.count + 1)", levels: Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, state(for: $0.id)) }))
