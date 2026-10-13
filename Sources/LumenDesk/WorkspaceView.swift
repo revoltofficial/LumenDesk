@@ -14,7 +14,6 @@ struct WorkspaceView: View {
     @State private var groupName = ""
     @State private var groupMembers: Set<UUID> = []
     @State private var extendingSelection = false
-    @State private var selectionModifiers: EventModifiers = []
     private let accent = Color(red: 0.43, green: 0.86, blue: 0.78)
 
     var body: some View {
@@ -44,7 +43,6 @@ struct WorkspaceView: View {
             transport
         }
         .background(Color(white: 0.10))
-        .onModifierKeysChanged(mask: [.command, .shift]) { _, current in selectionModifiers = current }
         .sheet(isPresented: $showingPatch) { patchSheet }
         .sheet(isPresented: $showingGroupEditor) { groupEditor }
         .confirmationDialog("Replace the selected cue with the current fixture levels?", isPresented: $confirmUpdate) {
@@ -80,7 +78,7 @@ struct WorkspaceView: View {
                     context.stroke(Path(roundedRect: rect, cornerRadius: 8), with: .color(.white.opacity(0.12)), lineWidth: 1)
                 }.allowsHitTesting(false)
                 VStack {
-                    HStack { Text("STAGE PREVIEW").tracking(2); Spacer(); Text(mode == "Design" ? "⌘ / Shift-click to select more" : "Live levels") }
+                    HStack { Text("STAGE PREVIEW").tracking(2); Spacer(); Text(mode == "Design" ? "Use Multi-select to choose several" : "Live levels") }
                     Spacer()
                     Text("AUDIENCE").tracking(5)
                 }.font(.caption2).foregroundStyle(.secondary).padding(20).allowsHitTesting(false)
@@ -102,7 +100,7 @@ struct WorkspaceView: View {
                     }
                     .frame(width: 96, height: 110).contentShape(Rectangle())
                     .position(x: x, y: y)
-                    .onTapGesture { store.selectFixture(id: fixture.id, extending: extendingSelection || selectionModifiers.contains(.command) || selectionModifiers.contains(.shift)) }
+                    .onTapGesture { store.selectFixture(id: fixture.id, extending: extendingSelection || NSEvent.modifierFlags.contains(.command) || NSEvent.modifierFlags.contains(.shift)) }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Select \(fixture.name)")
                     .accessibilityAddTraits(.isButton)
