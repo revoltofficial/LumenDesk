@@ -138,7 +138,7 @@ struct WorkspaceView: View {
             Picker("Workspace", selection: $mode) { Text("Design").tag("Design"); Text("Live").tag("Live"); Text("Presets").tag("Presets") }
                 .pickerStyle(.segmented).frame(width: 250)
             if mode == "Design" {
-                Picker("Fixture controls", selection: $designTab) { Text("Color").tag("Color"); Text("Position").tag("Position"); Text("Beam").tag("Beam") }.pickerStyle(.segmented).frame(width: 210)
+                Picker("Fixture controls", selection: $designTab) { Text("Color").tag("Color"); Text("Position").tag("Position"); Text("Beam").tag("Beam") }.pickerStyle(.segmented).labelsHidden().frame(width: 210)
             }
             Spacer(minLength: 4)
             if mode != "Live" {

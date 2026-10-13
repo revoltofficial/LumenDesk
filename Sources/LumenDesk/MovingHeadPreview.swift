@@ -6,7 +6,7 @@ struct MovingHeadBeams: View {
         Canvas { context, size in
             for fixture in store.project.fixtures where fixture.resolvedProfile.movingHead {
                 let state = store.renderedState(for: fixture.id)
-                guard state.dimmer > 0 else { continue }
+                guard state.dimmer > 0, fixture.height.isFinite, fixture.height > 0 else { continue }
                 let pose = HeadPose(state: state, profile: fixture.resolvedProfile)
                 let origin = CGPoint(x: max(48, min(size.width - 48, fixture.x * size.width)), y: max(58, min(size.height - 68, fixture.y * size.height)))
                 func map(_ point: FloorPoint) -> CGPoint { CGPoint(x: origin.x + point.x * size.width / 12, y: origin.y + point.y * size.height / 8) }
