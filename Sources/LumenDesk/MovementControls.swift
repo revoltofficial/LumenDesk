@@ -68,9 +68,9 @@ struct MovementControls: View {
                     path.move(to: CGPoint(x: 0, y: geo.size.height / 2)); path.addLine(to: CGPoint(x: geo.size.width, y: geo.size.height / 2))
                 }.stroke(.white.opacity(0.12))
                 Circle().fill(.mint).frame(width: 12, height: 12)
-                    .position(x: store.selectionValue(\.pan) * geo.size.width, y: (1 - store.selectionValue(\.tilt)) * geo.size.height)
+                    .position(x: CGFloat(store.selectionValue(\.pan)) * geo.size.width, y: CGFloat(1.0 - store.selectionValue(\.tilt)) * geo.size.height)
             }.contentShape(Rectangle()).gesture(DragGesture(minimumDistance: 0).onChanged { value in
-                store.setSelectionPosition(pan: value.location.x / geo.size.width, tilt: 1 - value.location.y / geo.size.height)
+                store.setSelectionPosition(pan: Double(value.location.x / geo.size.width), tilt: 1.0 - Double(value.location.y / geo.size.height))
             })
             .accessibilityLabel("Pan Tilt position pad")
         }
