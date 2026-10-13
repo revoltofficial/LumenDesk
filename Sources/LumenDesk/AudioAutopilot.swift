@@ -49,6 +49,7 @@ extension LightingStore {
 
     func startListening() {
         stopListening()
+        if musicInput == .computer { startComputerAudio(); return }
         let session = UUID(); audioSession = session
         microphoneStatus = "Awaiting microphone permission"
         AVCaptureDevice.requestAccess(for: .audio) { [weak self] granted in
@@ -74,11 +75,37 @@ extension LightingStore {
             }
         }
     }
+    func startComputerAudio() {
+        let session = UUID(); audioSession = session
+        microphoneStatus = "Awaiting computer-audio permission"
+        let listener = SystemAudioListener(); systemAudio = listener
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await listener.start(receive: { [weak self] level,bass,high,time in
+                    Task { @MainActor in
+                        guard let self, self.audioSession == session, self.listening else { return }
+                        self.receiveMusic(level: level,bass: bass,high: high,at: time)
+                    }
+                },failed: { [weak self] in
+                    Task { @MainActor in
+                        guard let self, self.audioSession == session else { return }
+                        self.stopListening(); self.microphoneStatus = "Computer audio stopped — start listening again"
+                    }
+                })
+                guard self.audioSession == session else { listener.stop(); return }
+                self.listening = true; self.microphoneStatus = "Listening · computer audio"
+            } catch {
+                guard self.audioSession == session else { listener.stop(); return }
+                self.stopListening(); self.microphoneStatus = error.localizedDescription
+            }
+        }
+    }
     func stopListening() {
-        audioSession = UUID(); microphone?.stop(); microphone = nil
+        audioSession = UUID(); microphone?.stop(); microphone = nil; systemAudio?.stop(); systemAudio = nil
         listening = false; audioDemo = false; autopilotEnabled = false
         musicAnalyzer = MusicAnalyzer(); music = MusicSnapshot(); lastMusicTime = -.infinity
-        lastTempoUpdate = -.infinity; microphoneStatus = "Microphone off"
+        lastTempoUpdate = -.infinity; microphoneStatus = "Audio input off"
     }
     func startAudioDemo() {
         stopListening(); audioDemo = true; microphoneStatus = "Demo audio · synthetic rhythm"; autopilotEnabled = true
@@ -110,8 +137,14 @@ struct AutopilotControls: View {
         VStack(alignment: .leading,spacing: 12) {
             Text("Music Autopilot · experimental").font(.headline)
             Text("Listen locally to the DJ. No audio is saved or uploaded.").font(.caption).foregroundStyle(.secondary)
+            Picker("Audio source",selection: $store.musicInput) {
+                ForEach(MusicInput.allCases,id: \.self) { Text($0.title).tag($0) }
+            }.pickerStyle(.segmented).onChange(of: store.musicInput) { _,_ in store.stopListening() }
+            if store.musicInput == .computer {
+                Text("Captures sound playing on this Mac. macOS requires screen/system-audio permission; no screen images are saved.").font(.caption).foregroundStyle(.secondary)
+            }
             HStack {
-                Button(store.listening || store.audioDemo ? "Stop listening" : "Listen to microphone") { if store.listening || store.audioDemo { store.stopListening() } else { store.startListening() } }
+                Button(store.listening || store.audioDemo ? "Stop listening" : "Listen to \(store.musicInput.title.lowercased())") { if store.listening || store.audioDemo { store.stopListening() } else { store.startListening() } }
                 Button("Try demo") { store.startAudioDemo() }
             }
             Text(store.microphoneStatus).font(.caption).fixedSize(horizontal: false,vertical: true)

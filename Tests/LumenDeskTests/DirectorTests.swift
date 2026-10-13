@@ -112,4 +112,24 @@ final class DirectorTests: XCTestCase {
         var state = FixtureState(); state.laserDMX = [0,1]
         XCTAssertThrowsError(try JSONDecoder().decode(FixtureState.self,from: JSONEncoder().encode(state)))
     }
+
+    func testComputerAudioFeaturesRejectInvalidSamplesAndProduceFiniteLevels() {
+        var extractor = AudioFeatureAccumulator()
+        XCTAssertNil(extractor.feed(.nan,sampleRate: 48000))
+        XCTAssertNil(extractor.feed(0.1,sampleRate: 0))
+        var outputs = [(Double,Double,Double)]()
+        for i in 0..<4800 {
+            if let result = extractor.feed(sin(Double(i)*2*Double.pi*120/48000)*0.2,sampleRate: 48000) { outputs.append(result) }
+        }
+        XCTAssertEqual(outputs.count,5)
+        XCTAssertTrue(outputs.allSatisfy { $0.0.isFinite && $0.1.isFinite && $0.2.isFinite && $0.0 > 0.1 })
+    }
+    @MainActor func testStopListeningResetsEverySourceAndAutopilot() {
+        let store = LightingStore(startTimer: false)
+        store.musicInput = .computer; store.audioDemo = true; store.listening = true; store.autopilotEnabled = true
+        store.stopListening()
+        XCTAssertFalse(store.listening); XCTAssertFalse(store.audioDemo); XCTAssertFalse(store.autopilotEnabled)
+        XCTAssertNil(store.systemAudio); XCTAssertNil(store.microphone)
+        XCTAssertEqual(store.musicInput,.computer)
+    }
 }

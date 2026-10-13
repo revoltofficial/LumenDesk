@@ -89,6 +89,8 @@ import UniformTypeIdentifiers
     private var sequencePausedAt: TimeInterval?
     private let clock: () -> TimeInterval
     @Published var music = MusicSnapshot()
+    @Published var musicInput = MusicInput.microphone
+    var systemAudio: SystemAudioListener?
     @Published var listening = false
     @Published var audioDemo = false
     @Published var autopilotEnabled = false
