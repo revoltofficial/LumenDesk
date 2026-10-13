@@ -16,7 +16,12 @@ struct PresetValues: Codable, Equatable {
     func applying(to state: FixtureState, fraction: Double = 1) -> FixtureState {
         var result = state
         let t = min(1, max(0, fraction))
-        func mix(_ current: Double, _ value: Double?) -> Double { value.map { current + ($0 - current) * t } ?? current }
+        func mix(_ current: Double, _ value: Double?) -> Double {
+            guard let value else { return current }
+            if t >= 1 { return value }
+            if t <= 0 { return current }
+            return current + (value - current) * t
+        }
         result.dimmer = mix(state.dimmer, dimmer)
         result.red = mix(state.red, red); result.green = mix(state.green, green)
         result.blue = mix(state.blue, blue); result.white = mix(state.white, white)
