@@ -22,6 +22,8 @@ final class MovingHeadTests: XCTestCase {
         XCTAssertThrowsError(try profile.validate())
         profile = .head; profile.channels[0].maximum = 65536
         XCTAssertThrowsError(try profile.validate())
+        profile = .rgb; profile.colorUsesDimmer = false
+        XCTAssertThrowsError(try profile.validate())
         profile = .head; profile.gobos = []
         XCTAssertThrowsError(try profile.validate())
     }
@@ -81,9 +83,9 @@ final class MovingHeadTests: XCTestCase {
         let state = store.renderedState(for: fixture.id), pose = HeadPose(state: store.renderedState(for: fixture.id), profile: fixture.resolvedProfile)
         XCTAssertEqual(state.pan, 0.5); XCTAssertEqual(pose.pan, 0)
         XCTAssertEqual(pose.tilt, 33.75)
-        XCTAssertEqual(Array(store.frame.prefix(4)), [128,0,160,0])
+        XCTAssertEqual(Array(store.frame.prefix(4)), [128,0,159,255])
         store.blackout = true
-        XCTAssertEqual(Array(store.frame.prefix(4)), [128,0,160,0])
+        XCTAssertEqual(Array(store.frame.prefix(4)), [128,0,159,255])
         XCTAssertEqual(store.frame[4], 0)
         XCTAssertEqual(store.renderedState(for: fixture.id).pan, state.pan)
         try store.project.validate()
