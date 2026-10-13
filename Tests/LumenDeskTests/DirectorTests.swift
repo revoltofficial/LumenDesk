@@ -87,4 +87,29 @@ final class DirectorTests: XCTestCase {
         store.blackout = false; store.stop()
         XCTAssertEqual(Array(store.frame[63..<72]),[UInt8](repeating: 0,count: 9))
     }
+
+    @MainActor func testNamedLaserBoardControlsPreserveHeadsAndAutopilot() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let store = LightingStore(startTimer: false,clock: { 0 })
+        store.project = try JSONDecoder().decode(ShowProject.self,from: Data(contentsOf: root.appendingPathComponent("Examples/AYRA-NGEAR-rig.lumendesk.json")))
+        try store.project.validate()
+        let headID = store.project.fixtures[0].id, laserID = store.project.fixtures[4].id
+        store.fixtureStates[headID] = FixtureState(dimmer: 0.7,red: 0.4)
+        let before = store.state(for: headID)
+        store.autopilotEnabled = true
+        let controls = try XCTUnwrap(store.project.liveBoard).controls
+        store.boardPress(try XCTUnwrap(controls.first(where: { $0.label == "Sound mode" })))
+        XCTAssertEqual(store.state(for: laserID).laserDMX?[0],50)
+        store.boardPress(try XCTUnwrap(controls.first(where: { $0.label == "Red" })))
+        XCTAssertEqual(store.state(for: laserID).laserDMX?[7],12)
+        store.boardPress(try XCTUnwrap(controls.first(where: { $0.label == "Double scan" })))
+        XCTAssertEqual(store.state(for: laserID).laserDMX?[1],127)
+        XCTAssertEqual(store.state(for: headID),before); XCTAssertTrue(store.autopilotEnabled)
+        store.boardPress(try XCTUnwrap(controls.first(where: { $0.label == "Laser OFF" })))
+        XCTAssertEqual(Array(store.frame[63..<72]),[UInt8](repeating: 0,count: 9))
+    }
+    func testMalformedLaserStateIsRejected() throws {
+        var state = FixtureState(); state.laserDMX = [0,1]
+        XCTAssertThrowsError(try JSONDecoder().decode(FixtureState.self,from: JSONEncoder().encode(state)))
+    }
 }

@@ -201,6 +201,15 @@ import UniformTypeIdentifiers
         fixtureStates = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, state(for: $0.id)) })
         releaseAllLayers()
     }
+    func setLaserChannel(id: UUID,channel: Int,value: Int) {
+        guard (0..<9).contains(channel), (0...255).contains(value), project.fixtures.contains(where: { $0.id == id && $0.resolvedProfile.isLaser }) else { return }
+        var current = fixtureStates[id] ?? .off
+        var bytes = current.laserDMX ?? [UInt8](repeating: 0,count: 9)
+        bytes[channel] = UInt8(value); current.laserDMX = bytes; current.dimmer = bytes[0] < 50 ? 0 : 1
+        fixtureStates[id] = current
+        // Preserve independent head fades/sequence playback when touching the laser.
+        fadeFrom[id] = current; fadeTo[id] = current
+    }
     func setState(id: UUID, state: FixtureState) {
         takeOverLayers()
         cancelSequence()

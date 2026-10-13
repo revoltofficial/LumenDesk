@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum BoardAction: String, Codable, CaseIterable { case cue, layer, effect, blackout, stop, tapTempo, syncTempo, text
+enum BoardAction: String, Codable, CaseIterable { case cue, layer, effect, blackout, stop, tapTempo, syncTempo, laser, text
     var title: String { self == .tapTempo ? "Tap Tempo" : self == .syncTempo ? "Sync Tempo" : rawValue.capitalized }
 }
 enum BoardBehavior: String, Codable, CaseIterable { case trigger, toggle, momentary }
@@ -9,6 +9,8 @@ struct BoardControl: Identifiable, Codable {
     var label = "New button"
     var action: BoardAction = .cue
     var targetID: UUID? = nil
+    var laserChannel: Int? = nil
+    var laserValue: Int? = nil
     var behavior: BoardBehavior = .trigger
     var column = 0
     var row = 0
@@ -23,6 +25,9 @@ struct LiveBoard: Codable {
         guard Set(controls.map(\.id)).count == controls.count, controls.count <= 200 else { throw ProjectError.invalid("Invalid live board identifiers or size.") }
         for c in controls {
             guard (0..<12).contains(c.column), (0..<12).contains(c.row), (1...12).contains(c.width), (1...12).contains(c.height), c.column + c.width <= 12, c.row + c.height <= 12, (10...36).contains(c.fontSize), ["mint", "blue", "orange", "pink", "white"].contains(c.color), c.label.count <= 200 else { throw ProjectError.invalid("Invalid live board control layout.") }
+            if c.action == .laser {
+                guard let channel = c.laserChannel, [0,1,7].contains(channel), let value = c.laserValue, (0...255).contains(value), c.behavior == .trigger else { throw ProjectError.invalid("Invalid manual laser control.") }
+            }
             guard c.behavior != .momentary || [.layer, .effect].contains(c.action) else { throw ProjectError.invalid("Momentary controls require a layer or effect.") }
         }
     }
@@ -33,6 +38,9 @@ extension LightingStore {
         case .cue: return c.targetID != nil && activeCueID == c.targetID
         case .layer: return layerMixer.layers.contains { $0.id == c.targetID }
         case .effect: return project.effects.contains { $0.id == c.targetID && $0.enabled }
+        case .laser:
+            guard let id = c.targetID, let channel = c.laserChannel, let value = c.laserValue, project.fixtures.contains(where: { $0.id == id && $0.resolvedProfile.isLaser }) else { return false }
+            return Int((state(for: id).laserDMX ?? [UInt8](repeating: 0,count: 9))[channel]) == value
         case .blackout: return blackout
         default: return false
         }
@@ -46,6 +54,7 @@ extension LightingStore {
         case .stop: stop()
         case .tapTempo: tapTempo()
         case .syncTempo: syncTempo()
+        case .laser: if let id = c.targetID, let channel = c.laserChannel, let value = c.laserValue { setLaserChannel(id: id,channel: channel,value: value) }
         case .text: break
         }
     }
@@ -140,13 +149,21 @@ struct LiveBoardView: View {
                 TextField("Label", text: binding(i, \.label)).textFieldStyle(.roundedBorder)
                 Picker("Action", selection: Binding(get: { controls[i].action }, set: { a in
                     store.project.liveBoard?.controls[i].action = a; store.project.liveBoard?.controls[i].targetID = nil; store.project.liveBoard?.controls[i].behavior = .trigger
+                    if a == .laser { store.project.liveBoard?.controls[i].laserChannel = 0; store.project.liveBoard?.controls[i].laserValue = 0 }
                 })) { ForEach(BoardAction.allCases, id: \.self) { Text($0.title).tag($0) } }
                 Picker("Target", selection: binding(i, \.targetID)) {
                     Text("Choose…").tag(nil as UUID?)
                     if controls[i].action == .cue { ForEach(store.project.cues) { Text($0.name).tag(Optional($0.id)) } }
                     if controls[i].action == .layer { ForEach(store.project.layerCues ?? []) { Text($0.name).tag(Optional($0.id)) } }
                     if controls[i].action == .effect { ForEach(store.project.effects) { Text($0.name).tag(Optional($0.id)) } }
-                }.disabled(![.cue, .layer, .effect].contains(controls[i].action))
+                    if controls[i].action == .laser { ForEach(store.project.fixtures.filter { $0.resolvedProfile.isLaser }) { Text($0.name).tag(Optional($0.id)) } }
+                }.disabled(![.cue, .layer, .effect, .laser].contains(controls[i].action))
+                if controls[i].action == .laser {
+                    Picker("Laser control",selection: Binding(get: { controls[i].laserChannel ?? 0 },set: { store.project.liveBoard?.controls[i].laserChannel = $0 })) {
+                        Text("Mode").tag(0); Text("Pattern").tag(1); Text("Colour").tag(7)
+                    }
+                    Stepper("DMX \(controls[i].laserValue ?? 0)",value: Binding(get: { controls[i].laserValue ?? 0 },set: { store.project.liveBoard?.controls[i].laserValue = $0 }),in: 0...255)
+                }
                 if [.layer, .effect].contains(controls[i].action) {
                     Picker("Behavior", selection: binding(i, \.behavior)) { ForEach(BoardBehavior.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) } }
                 }
