@@ -91,3 +91,7 @@ In Patch & Output, each moving head has Mount rotation (-180 to 180 degrees), In
 Live → Board opens a configurable control surface. Edit board lets you add buttons/text, drag controls on a grid, resize them and change labels, font sizes, colors, assigned targets and layer/effect behavior. Open Custom-live-board-demo.lumendesk.json beside the app for a populated example. Layout saves in show files. See LIVE-BOARD.md for operation, limitations and the supplied provisional Ayra/N-GEAR 9-channel profile drafts.
 
 The custom-board build passed all 44 tests and local editing/scene/blackout checks. Its delivered app is LumenDesk-LiveBoard.app.
+
+## Tempo
+
+Live now includes BPM, Tap Tempo, Sync and a beat indicator. Each effect can follow seconds or a shared beat count; these settings save with the show. Tap Tempo and Sync can also be placed on the custom board. See TEMPO.md.

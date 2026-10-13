@@ -1,6 +1,6 @@
 # Validation record
 
-Date: 13 October 2026. Current status: Apple Silicon executable built, 39 tests passed and native interface checked; hardware output untested. The initial table below records the earlier local compiler blocker.
+Date: 13 October 2026. Current status: Apple Silicon executable built, 49 tests passed and native interface checked; hardware output untested. The initial table below records the earlier local compiler blocker.
 
 | Check | Result |
 |---|---|
@@ -81,3 +81,9 @@ Build 38442517604 compiled 9f61a72ad2b324d2a0d3be0a03d67b042c205617 successfully
 Build 38445531414 compiled b6a27cd0f70ddd5daf35dfac8128b0bea4bd34ac successfully. All 44 tests passed. New tests cover board persistence/layout limits, effect toggle and momentary release, missing targets, blackout position preservation, unsupported momentary scenes and exact provisional fixture profile output bytes. The N-GEAR full-intensity value is 134; channels 8/9 remain zero. Profile drafts validate, and fixed optics expose no zoom/gobo attributes.
 
 The downloaded arm64 app was assigned local.lumendesk.liveboard, ad-hoc signed and verified with strict deep verification, and launched locally. The sample show opened with eight fixtures and the saved custom board. Native checks confirmed Live → Board, headings/buttons, activating Heads · left, Edit board, adding a button, changing its label to Opening look, increasing width to three grid columns, leaving edit mode, and board Blackout/Stop actions. Blackout was reset off and playback stopped. Output remained off. Drag placement and momentary pointer behavior are implemented but have not been verified through native automation. Hardware profile output remains untested; see LIVE-BOARD.md for unresolved mappings.
+
+## Shared tempo — 2026-10-13
+
+Build 38448046782 compiled commit 186d01492362c65b35e978ffda8ea04c2f590447 successfully and passed all 49 tests. New injected-clock tests cover tap averaging/rapid-tap filtering/gap reset, continuous beat position through BPM changes, Sync, full-cycle sine timing, chase fixture progression, saved tempo and legacy defaults, invalid timing rejection and board tempo actions. Release packaging passed. The downloaded arm64 delivery app was assigned local.lumendesk.tempo, ad-hoc signed and passed strict deep signature verification.
+
+Native checks on macOS 15.6.1 confirmed Live BPM/Tap Tempo/Sync and the changing beat indicator, editing BPM from 120 to 100, opening Effects, separate Seconds/Beats selectors and switching Intensity wave to Beats with a four-beat cycle selector. The file picker automation could not complete loading the separate tempo demo; the demo was generated and its JSON inspected, but native demo-load verification is incomplete. After restarting the app, it was left open with the tempo/effects panel and output off. Hardware output and real-time tapping by native automation remain untested.
