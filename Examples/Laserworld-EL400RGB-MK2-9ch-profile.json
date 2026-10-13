@@ -1,0 +1,76 @@
+{
+  "id": "laserworld.el400rgbmk2.9ch.provisional",
+  "name": "Laserworld EL-400RGB MK2 \u00b7 9ch \u00b7 manual draft",
+  "footprint": 9,
+  "channels": [
+    {
+      "attribute": "laser",
+      "offset": 1,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 2,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 3,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 4,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 5,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 6,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 7,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 8,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "laser",
+      "offset": 9,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    }
+  ],
+  "panDegrees": 540,
+  "tiltDegrees": 270,
+  "minimumBeamDegrees": 1,
+  "maximumBeamDegrees": 1,
+  "gobos": [],
+  "colorUsesDimmer": false
+}

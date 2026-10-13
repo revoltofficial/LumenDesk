@@ -42,8 +42,8 @@ final class DirectorTests: XCTestCase {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let show = try JSONDecoder().decode(ShowProject.self,from: Data(contentsOf: root.appendingPathComponent("Examples/AYRA-NGEAR-rig.lumendesk.json")))
         try show.validate()
-        XCTAssertEqual(show.fixtures.map(\.address),[1,10,19,28])
-        XCTAssertEqual(show.fixtures.map(\.autopilotRole),[.beam,.wash,.wash,.beam])
+        XCTAssertEqual(show.fixtures.map(\.address),[1,10,19,28,64])
+        XCTAssertEqual(show.fixtures.map(\.autopilotRole),[.beam,.wash,.wash,.beam,.manual])
         XCTAssertEqual(show.fixtures[1].resolvedProfile.bytes(for: FixtureState())[2],134)
         XCTAssertEqual(show.fixtures[0].resolvedProfile.bytes(for: FixtureState())[1],0)
     }
@@ -56,5 +56,35 @@ final class DirectorTests: XCTestCase {
         XCTAssertEqual(store.renderedState(for: id),store.state(for: id))
         let show = try JSONDecoder().decode(ShowProject.self,from: JSONEncoder().encode(store.project))
         XCTAssertEqual(show.fixtures[0].autopilotRole,.manual)
+    }
+
+    func testLaserModesAreDiscreteAndBlackoutSilencesAllChannels() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let profile = try JSONDecoder().decode(FixtureProfile.self,from: Data(contentsOf: root.appendingPathComponent("Examples/Laserworld-EL400RGB-MK2-9ch-profile.json")))
+        try profile.validate()
+        var state = FixtureState(); state.laserDMX = [200,42,0,0,255,128,128,23,5]
+        XCTAssertEqual(profile.bytes(for: state),state.laserDMX)
+        var off = state; off.dimmer = 0
+        XCTAssertEqual(profile.bytes(for: off),[UInt8](repeating: 0,count: 9))
+        XCTAssertEqual(off.blended(to: state,fraction: 0.5).laserDMX,off.laserDMX)
+        let decoded = try JSONDecoder().decode(FixtureState.self,from: JSONEncoder().encode(state))
+        XCTAssertEqual(decoded.laserDMX,state.laserDMX)
+    }
+    @MainActor func testAutopilotCannotActivateOrChangeLaserEvenWithBeamRole() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let store = LightingStore(startTimer: false,clock: { 0 })
+        store.project = try JSONDecoder().decode(ShowProject.self,from: Data(contentsOf: root.appendingPathComponent("Examples/AYRA-NGEAR-rig.lumendesk.json")))
+        store.project.fixtures[4].autopilotRole = .beam
+        let id = store.project.fixtures[4].id
+        store.fixtureStates[id] = .off
+        store.autopilotEnabled = true; store.lastMusicTime = 0
+        store.music = MusicSnapshot(level: 0.8,energy: 1,section: .drop)
+        XCTAssertEqual(Array(store.frame[63..<72]),[UInt8](repeating: 0,count: 9))
+        var manual = FixtureState(); manual.laserDMX = [150,8,0,0,200,100,128,12,0]; store.fixtureStates[id] = manual
+        XCTAssertEqual(store.renderedState(for: id),manual)
+        store.blackout = true
+        XCTAssertEqual(Array(store.frame[63..<72]),[UInt8](repeating: 0,count: 9))
+        store.blackout = false; store.stop()
+        XCTAssertEqual(Array(store.frame[63..<72]),[UInt8](repeating: 0,count: 9))
     }
 }

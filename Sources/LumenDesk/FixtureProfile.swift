@@ -1,7 +1,7 @@
 import Foundation
 
 enum FixtureAttribute: String, Codable, CaseIterable {
-    case dimmer, red, green, blue, white, pan, tilt, zoom, gobo, constant
+    case dimmer, red, green, blue, white, pan, tilt, zoom, gobo, constant, laser
 }
 struct ProfileChannel: Codable {
     var attribute: FixtureAttribute
@@ -28,6 +28,7 @@ struct FixtureProfile: Identifiable, Codable {
     var maximumBeamDegrees: Double = 40
     var gobos: [GoboSlot] = []
     var colorUsesDimmer: Bool = false
+    var isLaser: Bool { supports(.laser) }
     var movingHead: Bool { supports(.pan) && supports(.tilt) }
     func supports(_ attribute: FixtureAttribute) -> Bool { channels.contains { $0.attribute == attribute } }
     func goboIndex(_ state: FixtureState) -> Int { Int((state.gobo * Double(max(0, gobos.count - 1))).rounded()) }
@@ -39,13 +40,16 @@ struct FixtureProfile: Identifiable, Codable {
         for channel in channels {
             let limit = channel.fineOffset == nil ? 255 : 65535
             guard (0...limit).contains(channel.minimum), (0...limit).contains(channel.maximum), (0...255).contains(channel.constant) else { try fail("invalid channel range."); return }
-            if channel.attribute != .constant {
+            if channel.attribute != .constant && channel.attribute != .laser {
                 guard attributes.insert(channel.attribute.rawValue).inserted else { try fail("duplicate attribute."); return }
             }
             if channel.attribute == .gobo && channel.fineOffset != nil { try fail("gobo slots require an 8-bit channel."); return }
             for offset in [channel.offset, channel.fineOffset].compactMap({ $0 }) {
                 guard (1...footprint).contains(offset), occupied.insert(offset).inserted else { try fail("overlapping or out-of-range offsets."); return }
             }
+        }
+        if isLaser {
+            guard footprint == 9, channels.count == 9, channels.allSatisfy({ $0.attribute == .laser && $0.fineOffset == nil }) else { try fail("laser profiles require nine direct channels."); return }
         }
         guard supports(.dimmer) || colorUsesDimmer || !channels.contains(where: { [.red, .green, .blue, .white].contains($0.attribute) }) else { try fail("color-only fixtures must use virtual dimming."); return }
         guard gobos.count <= 32, gobos.allSatisfy({ !$0.name.isEmpty && (0...255).contains($0.dmx) && ["open", "dots", "star", "bars"].contains($0.pattern) }) else { try fail("invalid gobo slots."); return }
@@ -55,6 +59,11 @@ struct FixtureProfile: Identifiable, Codable {
         var values = [UInt8](repeating: 0, count: footprint)
         func normalized(_ value: Double) -> Double { min(1, max(0, value.isFinite ? value : 0)) }
         for channel in channels {
+            if channel.attribute == .laser {
+                let raw = state.laserDMX ?? [UInt8](repeating: 0,count: 9)
+                values[channel.offset-1] = state.dimmer > 0 && raw.count == 9 ? raw[channel.offset-1] : 0
+                continue
+            }
             let value: Double
             switch channel.attribute {
             case .dimmer: value = state.dimmer
@@ -66,7 +75,7 @@ struct FixtureProfile: Identifiable, Codable {
             case .tilt: value = state.tilt
             case .zoom: value = state.zoom
             case .gobo: value = state.gobo
-            case .constant: value = 0
+            case .constant, .laser: value = 0
             }
             let encoded: Int
             if channel.attribute == .constant { encoded = channel.constant }

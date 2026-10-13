@@ -344,6 +344,91 @@
       },
       "autopilotRole": "beam",
       "mountingHeight": 3
+    },
+    {
+      "id": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+      "name": "Laserworld LA1",
+      "kind": "dimmer",
+      "address": 64,
+      "x": 0.5,
+      "y": 0.2,
+      "profile": {
+        "id": "laserworld.el400rgbmk2.9ch.provisional",
+        "name": "Laserworld EL-400RGB MK2 \u00b7 9ch \u00b7 manual draft",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "laser",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 1,
+        "maximumBeamDegrees": 1,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "manual"
     }
   ],
   "cues": [
@@ -668,6 +753,82 @@
       "maximumBeamDegrees": 25,
       "gobos": [],
       "colorUsesDimmer": false
+    },
+    {
+      "id": "laserworld.el400rgbmk2.9ch.provisional",
+      "name": "Laserworld EL-400RGB MK2 \u00b7 9ch \u00b7 manual draft",
+      "footprint": 9,
+      "channels": [
+        {
+          "attribute": "laser",
+          "offset": 1,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 2,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 3,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 4,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 5,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 6,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 7,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 8,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 9,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        }
+      ],
+      "panDegrees": 540,
+      "tiltDegrees": 270,
+      "minimumBeamDegrees": 1,
+      "maximumBeamDegrees": 1,
+      "gobos": [],
+      "colorUsesDimmer": false
     }
   ],
   "fixtureGroups": [
@@ -796,7 +957,7 @@
       },
       {
         "id": "AE87B02A-CCB8-414B-AC23-4A70D6827474",
-        "label": "LASER \u00b7 manual / profile pending",
+        "label": "LASER \u00b7 manual controls in Design",
         "action": "text",
         "targetID": null,
         "behavior": "trigger",

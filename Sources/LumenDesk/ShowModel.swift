@@ -45,8 +45,9 @@ struct FixtureState: Codable, Equatable {
     var tilt: Double = 0.5
     var zoom: Double = 0.35
     var gobo: Double = 0
+    var laserDMX: [UInt8]? = nil
     var channels: [Double] { [dimmer, red, green, blue, white, pan, tilt, zoom, gobo] }
-    enum CodingKeys: String, CodingKey { case dimmer, red, green, blue, white, pan, tilt, zoom, gobo }
+    enum CodingKeys: String, CodingKey { case dimmer, red, green, blue, white, pan, tilt, zoom, gobo, laserDMX }
     init(dimmer: Double = 1, red: Double = 1, green: Double = 1, blue: Double = 1, white: Double = 0, pan: Double = 0.5, tilt: Double = 0.5, zoom: Double = 0.35, gobo: Double = 0) {
         self.dimmer = dimmer; self.red = red; self.green = green; self.blue = blue; self.white = white
         self.pan = pan; self.tilt = tilt; self.zoom = zoom; self.gobo = gobo
@@ -57,12 +58,16 @@ struct FixtureState: Codable, Equatable {
         green = try c.decode(Double.self, forKey: .green); blue = try c.decode(Double.self, forKey: .blue); white = try c.decode(Double.self, forKey: .white)
         pan = try c.decodeIfPresent(Double.self, forKey: .pan) ?? 0.5; tilt = try c.decodeIfPresent(Double.self, forKey: .tilt) ?? 0.5
         zoom = try c.decodeIfPresent(Double.self, forKey: .zoom) ?? 0.35; gobo = try c.decodeIfPresent(Double.self, forKey: .gobo) ?? 0
+        laserDMX = try c.decodeIfPresent([UInt8].self,forKey: .laserDMX)
+        if let laserDMX, laserDMX.count != 9 { throw DecodingError.dataCorruptedError(forKey: .laserDMX,in: c,debugDescription: "Laser control requires exactly nine channels.") }
     }
     static let off = FixtureState(dimmer: 0)
     func blended(to other: Self, fraction: Double) -> Self {
         let t = min(1, max(0, fraction))
         func mix(_ a: Double, _ b: Double) -> Double { t >= 1 ? b : a + (b - a) * t }
-        return Self(dimmer: mix(dimmer, other.dimmer), red: mix(red, other.red), green: mix(green, other.green), blue: mix(blue, other.blue), white: mix(white, other.white), pan: mix(pan, other.pan), tilt: mix(tilt, other.tilt), zoom: mix(zoom, other.zoom), gobo: t >= 1 ? other.gobo : gobo)
+        var result = Self(dimmer: mix(dimmer, other.dimmer), red: mix(red, other.red), green: mix(green, other.green), blue: mix(blue, other.blue), white: mix(white, other.white), pan: mix(pan, other.pan), tilt: mix(tilt, other.tilt), zoom: mix(zoom, other.zoom), gobo: t >= 1 ? other.gobo : gobo)
+        result.laserDMX = t >= 1 ? other.laserDMX : laserDMX
+        return result
     }
 }
 struct FixtureGroup: Identifiable, Codable {

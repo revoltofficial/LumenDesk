@@ -446,7 +446,7 @@ import UniformTypeIdentifiers
                 result.blue = result.blue * (1 - depth) + color.blue * depth
             }
         }
-        if autopilotEnabled, let fixture = project.fixtures.first(where: { $0.id == id }), fixture.autopilotRole != .manual {
+        if autopilotEnabled, let fixture = project.fixtures.first(where: { $0.id == id }), fixture.autopilotRole != .manual, !fixture.resolvedProfile.isLaser {
             let role = fixture.autopilotRole ?? (fixture.resolvedProfile.movingHead ? .beam : .wash)
             let peers = project.fixtures.filter { ($0.autopilotRole ?? ($0.resolvedProfile.movingHead ? .beam : .wash)) == role }
             result = AutopilotRenderer.render(base: result, snapshot: music, style: musicStyle, strength: autopilotStrength,

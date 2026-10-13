@@ -153,7 +153,9 @@ struct WorkspaceView: View {
 
     private var designControls: some View {
         HStack(alignment: .top, spacing: 22) {
-            if let fixture = store.selectedFixtures.first {
+            if let laser = store.selectedFixtures.first, laser.resolvedProfile.isLaser {
+                LaserControls(fixtureID: laser.id)
+            } else if let fixture = store.selectedFixtures.first {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(store.selectedFixtures.count == 1 ? fixture.name : "\(store.selectedFixtures.count) fixtures selected").font(.headline)
                     Text(store.selectedFixtures.count == 1 ? "\(fixture.resolvedProfile.name) · DMX \(fixture.address)–\(fixture.address + fixture.footprint - 1)" : "Changes apply to the selection").font(.caption).foregroundStyle(.secondary)
