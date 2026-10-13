@@ -55,3 +55,19 @@ Local app checks confirmed capture of a color preset and an intensity preset; la
 The delivered app uses local.lumendesk.layers so it can coexist with earlier prototypes, and was ad-hoc re-signed and verified after that metadata change. Fade-in applies to level channels over the changing underlying look; effects and releases switch immediately. Hardware output and long-duration behavior remain untested.
 
 Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38435473635
+
+## Moving heads — 2026-10-13
+
+Build 38439002849 compiled ae11bf21ee9010f3307ab95f35421038a190d059 for Apple Silicon and passed all 34 tests. Nine moving-head tests cover exact 16-bit byte order and quantization, reversed/custom channel ranges, overlapping fine-channel rejection, neutral/quarter-turn floor projection, above-horizon suppression, beam-angle footprint, absolute 540-degree travel, discrete gobo changes, legacy state defaults, profile persistence, cue/preview/output synchronization, blackout preserving movement, patch bounds, position presets, and motion-effect fixture isolation.
+
+Local checks on that build confirmed adding the two-head demo (8 fixtures, heads patched at 19 and 30 with 11-channel footprints), changing from the left to right four-second cue with intermediate pan/tilt readings and moving head/beam geometry, tilt 127.4 degrees removing Head 1’s floor beam while Head 2 remained visible, Aim forward restoring the beam, zoom 28.8 degrees to 8 degrees shrinking its floor spot, and gobo Star being displayed from the cue. Importing the supplied example profile added Example Moving Head · 11ch to the library. The prior Layered-cues-demo.lumendesk.json loaded successfully, with six fixtures. All checks kept Art-Net output off. Moving-heads-demo.lumendesk.json was saved and inspected: eight fixtures, two profile snapshots and four cues including both movement sweeps.
+
+The preview is a schematic hanging-mount floor projection with original gobo shapes, not motor/photometric simulation. Real fixture mapping, mechanical lag, orientation calibration and hardware output remain unverified. Preview and output use the same rendered attributes; 16-bit output quantization can differ from continuous preview by at most half an encoded step.
+
+Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38439002849
+
+## Final moving-head delivery — 2026-10-13
+
+Build 38441313892 compiled commit 5e44f1c8f32f181a67cacccf5453fed0cad187cf on the standard macOS 26 Apple Silicon runner. All 36 XCTest tests passed, including legacy-show orbit availability and Stop preserving the rendered position with movement effects. Release packaging passed. The downloaded arm64 app was assigned the local delivery bundle identifier local.lumendesk.movingheads and ad-hoc re-signed; strict deep signature verification passed.
+
+The final app launched on the user's macOS 15.6.1 machine. The saved moving-head demo opened with eight fixtures. The compact Color/Position/Beam tabs displayed correctly. Activating Heads · left showed intermediate pan/tilt and settled at pan -37.8 degrees, tilt 40.5 degrees. Stop darkened all eight fixtures while leaving both glyph poses and those pan/tilt values unchanged. The demo was left open with Art-Net output off. Real fixtures, mechanical response and photometric accuracy remain untested.
