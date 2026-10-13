@@ -132,4 +132,12 @@ final class DirectorTests: XCTestCase {
         XCTAssertNil(store.systemAudio); XCTAssertNil(store.microphone)
         XCTAssertEqual(store.musicInput,.computer)
     }
+
+    @MainActor func testDemoTempoRemains120WithoutFollowingAliasEstimates() {
+        let store = LightingStore(startTimer: false,clock: { 0 })
+        store.startAudioDemo()
+        for i in 0..<600 { store.receiveMusic(level: i%50 == 0 ? 0.4 : 0.04,bass: 0.1,high: 0.05,at: Double(i)/50) }
+        XCTAssertEqual(store.bpm,120)
+        XCTAssertTrue(store.autopilotEnabled)
+    }
 }

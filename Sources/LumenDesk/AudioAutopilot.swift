@@ -108,14 +108,14 @@ extension LightingStore {
         lastTempoUpdate = -.infinity; microphoneStatus = "Audio input off"
     }
     func startAudioDemo() {
-        stopListening(); audioDemo = true; microphoneStatus = "Demo audio · synthetic rhythm"; autopilotEnabled = true
+        stopListening(); setBPM(120); syncTempo(); audioDemo = true; microphoneStatus = "Demo audio · synthetic 120 BPM rhythm"; autopilotEnabled = true
     }
     func receiveMusic(level: Double,bass: Double,high: Double,at time: Double) {
         guard time >= lastMusicTime else { return }
         music = musicAnalyzer.process(level: level,bass: bass,high: high,time: time)
         lastMusicTime = time
-        if automaticTempo, music.confidence >= 0.55, music.beat { tempoClock.alignBeat() }
-        if automaticTempo, let detected = music.bpm, music.confidence >= 0.55, time-lastTempoUpdate >= 1 {
+        if !audioDemo, automaticTempo, music.confidence >= 0.55, music.beat { tempoClock.alignBeat() }
+        if !audioDemo, automaticTempo, let detected = music.bpm, music.confidence >= 0.55, time-lastTempoUpdate >= 1 {
             // Gradual changes avoid abrupt jumps from noisy half/double-time estimates.
             project.tempo = TempoSettings(bpm: bpm*0.8+detected*0.2)
             lastTempoUpdate = time
@@ -154,7 +154,7 @@ struct AutopilotControls: View {
             Text("Auto uses tonal balance; choose Disco or Techno to set the palette yourself.").font(.caption).foregroundStyle(.secondary)
             HStack { Text("Intensity"); Slider(value: $store.autopilotStrength,in: 0...1) }
             Text("\(store.music.section.rawValue) · tempo confidence \(Int(store.music.confidence*100))%")
-            Text(store.music.bpm.map { "Estimated \($0.formatted(.number.precision(.fractionLength(1)))) BPM" } ?? "Waiting for a steady beat…").font(.caption)
+            Text(store.audioDemo ? "Demo rhythm · 120 BPM" : (store.music.bpm.map { "Estimated \($0.formatted(.number.precision(.fractionLength(1)))) BPM" } ?? "Waiting for a steady beat…")).font(.caption)
             Text("\(DirectorLook.current(beats: store.tempoClock.beats).title) · bar \(Int(store.tempoClock.beats/4)%8+1) of 8").font(.caption)
             Text("Phrase timing follows BPM and Sync. Section detection estimates energy changes; it cannot predict an unknown track.").font(.caption).foregroundStyle(.secondary)
             Button("Save this look") { store.saveAutopilotLook() }.disabled(!store.autopilotEnabled)
