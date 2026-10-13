@@ -44,3 +44,7 @@ Six XCTest tests cover ArtDMX byte order and universe boundaries, patch collisio
 This is a small first implementation, not full Lightkey parity. Missing: fixture-profile editor/library, 16-bit attributes, pan/tilt/gobos, multiple universes, cue layering/priorities and release behavior, sequences/cue lists, custom fade curves, per-cue effects, MIDI/OSC/DMX input, keyboard binding editor, sACN, USB/OLA output, Hue, node discovery, undo/autosave, and hardware/long-duration tests. Existing Lightkey project import is also not implemented.
 
 Use manufacturer-authored fixture specifications or suitably licensed libraries when expanding profiles. Art-Net protocol reference and product requirements: [Artistic Licence Art-Net](https://art-net.org.uk/). Product release requirements need to be checked before distribution. Art-Net™ Designed by and Copyright Artistic Licence Engineering Ltd.
+
+## Timed playback
+
+Open Live and click Run sequence. Each cue fades for its Fade duration, then holds for its Hold duration (default three seconds). Choose Forward, Reverse, or Ping-pong and optionally Repeat before starting. Pause freezes the current fade and sequence countdown; global effects continue. Resume continues from the same point. Manual cue activation or fixture edits cancel automatic playback. Stop darkens all fixture states and disables effects. On normal completion, the last cue remains visible. Timing/levels are captured at run start; edits apply on restart. Settings and holds are saved in the show file, and older show files remain readable.
