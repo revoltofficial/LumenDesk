@@ -15,6 +15,18 @@ struct Fixture: Identifiable, Codable {
     var y: Double = 0.5
     var profile: FixtureProfile? = nil
     var mountingHeight: Double? = nil
+    var mountingRotation: Double? = nil
+    var invertPan: Bool? = nil
+    var invertTilt: Bool? = nil
+    var rotation: Double { mountingRotation ?? 0 }
+    func outputState(_ state: FixtureState) -> FixtureState {
+        var result = state
+        if resolvedProfile.movingHead {
+            if invertPan == true { result.pan = 1 - state.pan }
+            if invertTilt == true { result.tilt = 1 - state.tilt }
+        }
+        return result
+    }
     var resolvedProfile: FixtureProfile {
         if let profile { return profile }
         switch kind { case .dimmer: return .dimmer; case .rgb: return .rgb; case .rgbw: return .rgbw; case .movingHead: return .head }
@@ -128,6 +140,7 @@ struct ShowProject: Codable {
             guard fixture.address >= 1, fixture.address <= 513 - fixture.footprint else { try fail("\(fixture.name) extends outside DMX channels 1–512."); return }
             try fixture.resolvedProfile.validate()
             guard fixture.height.isFinite, (0.1...30).contains(fixture.height) else { try fail("Mounting height must be between 0.1 and 30 metres."); return }
+            guard fixture.rotation.isFinite, (-180...180).contains(fixture.rotation) else { try fail("Mounting rotation must be between -180 and 180 degrees."); return }
             guard fixture.x.isFinite, fixture.y.isFinite else { try fail("Invalid fixture position."); return }
             for channel in fixture.address..<(fixture.address + fixture.footprint) {
                 guard occupied.insert(channel).inserted else { try fail("\(fixture.name) overlaps DMX channel \(channel)."); return }

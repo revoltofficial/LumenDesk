@@ -100,7 +100,7 @@ struct WorkspaceView: View {
                         VStack(spacing: 7) {
                             Group {
                                 if fixture.resolvedProfile.movingHead {
-                                    MovingHeadGlyph(pose: HeadPose(state: state, profile: fixture.resolvedProfile), color: color, intensity: state.dimmer)
+                                    MovingHeadGlyph(pose: HeadPose(state: state, profile: fixture.resolvedProfile, mountingRotation: fixture.rotation), color: color, intensity: state.dimmer)
                                 } else {
                                     Image(systemName: "lightbulb.led.fill").font(.system(size: 24)).foregroundStyle(color).opacity(0.2 + state.dimmer * 0.8).frame(width: 52, height: 54)
                                 }
@@ -450,6 +450,7 @@ struct WorkspaceView: View {
             ScrollView {
                 VStack(spacing: 8) {
                     ForEach($store.project.fixtures) { $fixture in
+                        VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 14) {
                             Image(systemName: "lightbulb.led.fill").foregroundStyle(accent)
                             TextField("Fixture name", text: $fixture.name).textFieldStyle(.roundedBorder)
@@ -463,6 +464,17 @@ struct WorkspaceView: View {
                             }
                             Stepper(value: $fixture.address, in: 1...max(1, 513 - fixture.footprint)) { Text("DMX \(fixture.address)").monospacedDigit().frame(width: 75) }.frame(width: 135)
                             Button { store.removeFixture(id: fixture.id) } label: { Image(systemName: "trash") }.buttonStyle(.borderless)
+                        }
+                        if fixture.resolvedProfile.movingHead {
+                            HStack {
+                                Text("Mount rotation")
+                                TextField("Degrees", value: Binding(get: { fixture.rotation }, set: { fixture.mountingRotation = $0 }), format: .number).textFieldStyle(.roundedBorder).frame(width: 65)
+                                Text("°").foregroundStyle(.secondary)
+                                Toggle("Invert pan output", isOn: Binding(get: { fixture.invertPan ?? false }, set: { fixture.invertPan = $0 }))
+                                Toggle("Invert tilt output", isOn: Binding(get: { fixture.invertTilt ?? false }, set: { fixture.invertTilt = $0 }))
+                            }.font(.caption)
+                            Text("Rotation turns the stage preview. Invert output to compensate for reversed fixture movement.").font(.caption).foregroundStyle(.secondary)
+                        }
                         }.padding(10).background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
                     }
                 }

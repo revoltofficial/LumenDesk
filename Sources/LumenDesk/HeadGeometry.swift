@@ -15,8 +15,8 @@ struct HeadPose {
         // Hanging mount: neutral tilt aims straight down; neutral pan faces the audience (+Y).
         return Vector3(x: sin(p) * sin(t), y: cos(p) * sin(t), z: -cos(t))
     }
-    init(state: FixtureState, profile: FixtureProfile) {
-        pan = (state.pan - 0.5) * profile.panDegrees
+    init(state: FixtureState, profile: FixtureProfile, mountingRotation: Double = 0) {
+        pan = (state.pan - 0.5) * profile.panDegrees + mountingRotation
         tilt = (state.tilt - 0.5) * profile.tiltDegrees
         beamDegrees = profile.minimumBeamDegrees + state.zoom * (profile.maximumBeamDegrees - profile.minimumBeamDegrees)
     }

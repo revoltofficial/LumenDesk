@@ -408,7 +408,7 @@ import UniformTypeIdentifiers
         // Invalid live edits silence output instead of sending overlapping patches.
         guard (try? project.validate()) != nil else { return values }
         for fixture in project.fixtures {
-            let channels = fixture.resolvedProfile.bytes(for: renderedState(for: fixture.id))
+            let channels = fixture.resolvedProfile.bytes(for: fixture.outputState(renderedState(for: fixture.id)))
             for (offset, level) in channels.enumerated() { values[fixture.address - 1 + offset] = level }
         }
         return values

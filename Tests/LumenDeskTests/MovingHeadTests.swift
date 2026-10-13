@@ -2,6 +2,38 @@ import XCTest
 @testable import LumenDesk
 
 final class MovingHeadTests: XCTestCase {
+    func testMountingRotationTurnsFloorRayAndFootprint() {
+        let state = FixtureState(tilt: 0.5 + 45.0 / 270)
+        let front = HeadPose(state: state, profile: .head)
+        let side = HeadPose(state: state, profile: .head, mountingRotation: 90)
+        XCTAssertEqual(side.floorPoint(height: 3)!.x, 3, accuracy: 0.000001)
+        XCTAssertEqual(side.floorPoint(height: 3)!.y, 0, accuracy: 0.000001)
+        for (a, b) in zip(front.footprint(height: 3), side.footprint(height: 3)) {
+            XCTAssertEqual(b.x, a.y, accuracy: 0.000001)
+            XCTAssertEqual(b.y, -a.x, accuracy: 0.000001)
+        }
+    }
+    func testCalibrationRoundTripAndOutputInversion() throws {
+        var fixture = Fixture(name: "Calibrated head", kind: .movingHead, address: 1)
+        fixture.mountingRotation = 90; fixture.invertPan = true; fixture.invertTilt = true
+        let decoded = try JSONDecoder().decode(Fixture.self, from: JSONEncoder().encode(fixture))
+        XCTAssertEqual(decoded.rotation, 90)
+        let state = FixtureState(dimmer: 0.4, pan: 0.25, tilt: 0.75, zoom: 0.2, gobo: 1)
+        let output = decoded.outputState(state)
+        XCTAssertEqual(output.pan, 0.75); XCTAssertEqual(output.tilt, 0.25)
+        XCTAssertEqual(output.dimmer, state.dimmer); XCTAssertEqual(output.zoom, state.zoom); XCTAssertEqual(output.gobo, state.gobo)
+        XCTAssertEqual(Array(decoded.resolvedProfile.bytes(for: output).prefix(4)), [191, 255, 64, 0])
+        fixture.kind = .rgb; fixture.profile = nil
+        XCTAssertEqual(fixture.outputState(state), state)
+    }
+    func testLegacyCalibrationDefaultsAndInvalidRotation() throws {
+        let fixture = try JSONDecoder().decode(Fixture.self, from: Data("{\"id\":\"11111111-1111-1111-1111-111111111111\",\"name\":\"Old\",\"kind\":\"movingHead\",\"address\":1,\"x\":0.5,\"y\":0.5}".utf8))
+        XCTAssertEqual(fixture.rotation, 0); XCTAssertEqual(fixture.outputState(FixtureState()), FixtureState())
+        var show = ShowProject.demo
+        show.fixtures[0].mountingRotation = 181
+        XCTAssertThrowsError(try show.validate())
+    }
+
     func test16BitCoarseFineAndNoDimmerMultiplicationOfPosition() throws {
         let profile = FixtureProfile.head
         try profile.validate()
