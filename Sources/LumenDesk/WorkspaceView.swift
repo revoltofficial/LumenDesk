@@ -213,6 +213,12 @@ struct WorkspaceView: View {
                     TextField("Seconds", value: $store.project.cues[i].fadeSeconds, format: .number).textFieldStyle(.roundedBorder).frame(width: 70)
                     Text("seconds").font(.caption).foregroundStyle(.secondary)
                 }
+                HStack {
+                    Text("Hold").font(.caption)
+                    TextField("Seconds", value: Binding(get: { store.project.cues[i].sequenceHold }, set: { store.project.cues[i].holdSeconds = $0 }), format: .number)
+                        .textFieldStyle(.roundedBorder).frame(width: 70)
+                    Text("seconds").font(.caption).foregroundStyle(.secondary)
+                }
                 Button("Activate cue") { store.activateCue(id: store.project.cues[i].id) }.frame(maxWidth: .infinity)
                 Button("Update from current look…") { confirmUpdate = true }.font(.caption)
             } else { Text("Capture a look to create a cue.").font(.caption).foregroundStyle(.secondary) }
@@ -233,6 +239,23 @@ struct WorkspaceView: View {
                 Spacer()
                 Toggle("Effects", isOn: $showEffects).toggleStyle(.button)
             }
+            HStack(spacing: 12) {
+                Button(action: store.startSequence) { Label(store.sequencePlayer == nil ? "Run sequence" : "Restart", systemImage: "play.circle") }
+                    .disabled(store.project.cues.isEmpty)
+                if let player = store.sequencePlayer {
+                    Button(action: store.toggleSequencePause) { Label(player.isPaused ? "Resume" : "Pause", systemImage: player.isPaused ? "play.fill" : "pause.fill") }
+                    Text("\(player.isPaused ? "Paused" : "Step \(player.index + 1)/\(player.steps.count)") · \(store.sequenceRemaining, specifier: "%.1f") s")
+                        .font(.caption).monospacedDigit().foregroundStyle(.secondary)
+                } else {
+                    Picker("Order", selection: Binding(get: { (store.project.sequenceSettings ?? SequenceSettings()).direction }, set: { value in
+                        var settings = store.project.sequenceSettings ?? SequenceSettings(); settings.direction = value; store.project.sequenceSettings = settings
+                    })) { ForEach(SequenceDirection.allCases) { direction in Text(direction.title).tag(direction) } }.labelsHidden().frame(width: 125)
+                    Toggle("Repeat", isOn: Binding(get: { (store.project.sequenceSettings ?? SequenceSettings()).repeats }, set: { value in
+                        var settings = store.project.sequenceSettings ?? SequenceSettings(); settings.repeats = value; store.project.sequenceSettings = settings
+                    }))
+                }
+                Spacer(minLength: 0)
+            }.font(.caption).help("Each cue fades, then holds. Timing edits apply on the next run. Pause freezes cue fades; global effects continue.")
             ScrollView {
                 if showEffects { effectsPanel }
                 else if liveStyle == "Buttons" {
@@ -257,7 +280,7 @@ struct WorkspaceView: View {
                                     Text(String(format: "%02d", index + 1)).monospacedDigit().foregroundStyle(.secondary).frame(width: 28)
                                     Text(cue.name)
                                     Spacer()
-                                    Text("\(cue.fadeSeconds, specifier: "%.1f") s").foregroundStyle(.secondary)
+                                    Text("Fade \(cue.fadeSeconds, specifier: "%.1f") s · Hold \(cue.sequenceHold, specifier: "%.1f") s").font(.caption).foregroundStyle(.secondary)
                                     Image(systemName: store.activeCueID == cue.id ? "play.fill" : "play").foregroundStyle(accent)
                                 }.padding(10).background(store.activeCueID == cue.id ? accent.opacity(0.15) : .white.opacity(0.03), in: RoundedRectangle(cornerRadius: 6))
                             }.buttonStyle(.plain)

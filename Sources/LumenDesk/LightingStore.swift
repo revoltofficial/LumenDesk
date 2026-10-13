@@ -13,6 +13,10 @@ import UniformTypeIdentifiers
     @Published var errorMessage: String?
     @Published var phase: Double = 0
     @Published var fixtureStates: [UUID: FixtureState] = [:]
+    @Published private(set) var sequencePlayer: SequencePlayer?
+    private var sequenceCues: [UUID: Cue] = [:]
+    private var sequencePausedAt: TimeInterval?
+    private let clock: () -> TimeInterval
     private let output = ArtNetOutput()
     private var timer: Timer?
     private var lastTick = ProcessInfo.processInfo.systemUptime
@@ -23,7 +27,9 @@ import UniformTypeIdentifiers
     private var connectedDestination = ""
     private var lastOutputUniverse = 1
 
-    init() {
+    init(startTimer: Bool = true, clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
+        self.clock = clock
+        lastTick = clock()
         selectedFixtureID = project.fixtures.first?.id
         selectedCueID = project.cues.first?.id
         fixtureStates = project.cues.first?.levels ?? [:]
@@ -33,12 +39,15 @@ import UniformTypeIdentifiers
                 self?.stopOutput()
             }
         }
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.tick() }
+        if startTimer {
+            timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
+                Task { @MainActor in self?.tick() }
+            }
         }
     }
     func state(for id: UUID) -> FixtureState { fixtureStates[id] ?? .off }
     func setState(id: UUID, state: FixtureState) {
+        cancelSequence()
         fadeStart = nil
         activeCueID = nil
         fixtureStates[id] = state
@@ -57,6 +66,7 @@ import UniformTypeIdentifiers
         selectedFixtureID = fixture.id
     }
     func removeFixture(id: UUID) {
+        cancelSequence()
         project.fixtures.removeAll { $0.id == id }
         fixtureStates.removeValue(forKey: id)
         for index in project.cues.indices { project.cues[index].levels.removeValue(forKey: id) }
@@ -69,12 +79,16 @@ import UniformTypeIdentifiers
     }
     func activateCue(id: UUID) {
         guard let cue = project.cues.first(where: { $0.id == id }) else { return }
+        cancelSequence()
+        applyCue(cue)
+    }
+    private func applyCue(_ cue: Cue) {
         fadeFrom = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, state(for: $0.id)) })
         fadeTo = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, cue.levels[$0.id] ?? .off) })
         fadeDuration = max(0, cue.fadeSeconds.isFinite ? cue.fadeSeconds : 0)
-        fadeStart = ProcessInfo.processInfo.systemUptime
-        activeCueID = id
-        selectedCueID = id
+        fadeStart = clock()
+        activeCueID = cue.id
+        selectedCueID = cue.id
         if fadeDuration == 0 { fixtureStates = fadeTo; fadeStart = nil }
     }
     var nextCueID: UUID? {
@@ -88,24 +102,66 @@ import UniformTypeIdentifiers
         project.cues[index].levels = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, state(for: $0.id)) })
     }
     func removeCue(id: UUID) {
+        if sequenceCues[id] != nil { cancelSequence() }
         if activeCueID == id { stop() }
         project.cues.removeAll { $0.id == id }
         if selectedCueID == id { selectedCueID = project.cues.first?.id }
     }
     func stop() {
+        cancelSequence()
         fadeStart = nil
         activeCueID = nil
         fixtureStates = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, FixtureState.off) })
         for index in project.effects.indices { project.effects[index].enabled = false }
     }
-    private func tick() {
-        let now = ProcessInfo.processInfo.systemUptime
+    var sequenceRemaining: Double {
+        guard let player = sequencePlayer else { return 0 }
+        return player.pausedRemaining ?? max(0, player.deadline - clock())
+    }
+    func startSequence() {
+        do { try project.validate() } catch { errorMessage = error.localizedDescription; return }
+        cancelSequence()
+        guard let player = SequencePlayer(cues: project.cues, settings: project.sequenceSettings ?? SequenceSettings(), now: clock()) else { return }
+        sequenceCues = Dictionary(uniqueKeysWithValues: project.cues.map { ($0.id, $0) })
+        sequencePlayer = player
+        if let cue = sequenceCues[player.currentCueID] { applyCue(cue) }
+    }
+    func toggleSequencePause() {
+        guard var player = sequencePlayer else { return }
+        let now = clock()
+        if player.isPaused {
+            if let pausedAt = sequencePausedAt, let start = fadeStart { fadeStart = start + now - pausedAt }
+            player.resume(now: now)
+            sequencePausedAt = nil
+        } else {
+            tick()
+            guard let current = sequencePlayer else { return }
+            player = current
+            player.pause(now: now)
+            sequencePausedAt = now
+        }
+        sequencePlayer = player
+    }
+    private func cancelSequence() {
+        if let pausedAt = sequencePausedAt, let start = fadeStart { fadeStart = start + clock() - pausedAt }
+        sequencePlayer = nil
+        sequenceCues = [:]
+        sequencePausedAt = nil
+    }
+    func tick() {
+        let now = clock()
         phase += min(0.25, max(0, now - lastTick))
         lastTick = now
-        if let start = fadeStart {
+        if let start = fadeStart, sequencePlayer?.isPaused != true {
             let fraction = fadeDuration <= 0 ? 1 : min(1, (now - start) / fadeDuration)
             for fixture in project.fixtures { fixtureStates[fixture.id] = (fadeFrom[fixture.id] ?? .off).blended(to: fadeTo[fixture.id] ?? .off, fraction: fraction) }
             if fraction >= 1 { fadeStart = nil }
+        }
+        if var player = sequencePlayer {
+            let next = player.advance(now: now)
+            sequencePlayer = player
+            if let id = next, let cue = sequenceCues[id] { applyCue(cue) }
+            if player.finished { cancelSequence() }
         }
         if outputEnabled {
             do {
@@ -204,6 +260,7 @@ import UniformTypeIdentifiers
             let next = try JSONDecoder().decode(ShowProject.self, from: data)
             try next.validate()
             stopOutput()
+            cancelSequence()
             project = next
             fadeStart = nil
             activeCueID = nil

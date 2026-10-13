@@ -32,6 +32,17 @@ struct Cue: Identifiable, Codable {
     var name: String
     var fadeSeconds: Double = 1
     var levels: [UUID: FixtureState]
+    var holdSeconds: Double? = nil
+    var sequenceHold: Double { holdSeconds ?? 3 }
+}
+enum SequenceDirection: String, Codable, CaseIterable, Identifiable {
+    case forward, reverse, pingPong
+    var id: String { rawValue }
+    var title: String { switch self { case .forward: return "Forward"; case .reverse: return "Reverse"; case .pingPong: return "Ping-pong" } }
+}
+struct SequenceSettings: Codable {
+    var direction: SequenceDirection = .forward
+    var repeats = false
 }
 enum EffectKind: String, Codable, CaseIterable, Identifiable {
     case sine, chase, rainbow
@@ -54,6 +65,7 @@ struct ShowProject: Codable {
     // Display universe 1 maps to Art-Net port-address 0.
     var universe: Int = 1
     var destination: String = "127.0.0.1"
+    var sequenceSettings: SequenceSettings? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -78,6 +90,7 @@ struct ShowProject: Codable {
         }
         for cue in cues {
             guard cue.fadeSeconds.isFinite, (0...3600).contains(cue.fadeSeconds) else { try fail("Invalid cue fade time."); return }
+            guard cue.sequenceHold.isFinite, (0.05...3600).contains(cue.sequenceHold) else { try fail("Cue hold time must be between 0.05 and 3600 seconds."); return }
             for state in cue.levels.values {
                 guard [state.dimmer,state.red,state.green,state.blue,state.white].allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { try fail("Cue levels must be between 0 and 1."); return }
             }
