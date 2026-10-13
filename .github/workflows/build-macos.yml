@@ -1,0 +1,28 @@
+name: Build LumenDesk for Mac
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test and build app
+        run: zsh build-app.sh
+      - name: Verify and package app
+        run: |
+          codesign --verify --strict dist/LumenDesk.app
+          ditto -c -k --sequesterRsrc --keepParent dist/LumenDesk.app dist/LumenDesk-Mac.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LumenDesk-Mac
+          path: dist/LumenDesk-Mac.zip
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,93 @@
+import Foundation
+
+enum FixtureKind: String, Codable, CaseIterable, Identifiable {
+    case dimmer, rgb, rgbw
+    var id: String { rawValue }
+    var footprint: Int { self == .dimmer ? 1 : (self == .rgb ? 3 : 4) }
+    var title: String { rawValue.uppercased() }
+}
+struct Fixture: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var kind: FixtureKind
+    var address: Int
+    var x: Double = 0.5
+    var y: Double = 0.5
+}
+struct FixtureState: Codable, Equatable {
+    var dimmer: Double = 1
+    var red: Double = 1
+    var green: Double = 1
+    var blue: Double = 1
+    var white: Double = 0
+    static let off = FixtureState(dimmer: 0)
+    func blended(to other: Self, fraction: Double) -> Self {
+        let t = min(1, max(0, fraction))
+        func mix(_ a: Double, _ b: Double) -> Double { a + (b - a) * t }
+        return Self(dimmer: mix(dimmer, other.dimmer), red: mix(red, other.red), green: mix(green, other.green), blue: mix(blue, other.blue), white: mix(white, other.white))
+    }
+}
+struct Cue: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var fadeSeconds: Double = 1
+    var levels: [UUID: FixtureState]
+}
+enum EffectKind: String, Codable, CaseIterable, Identifiable {
+    case sine, chase, rainbow
+    var id: String { rawValue }
+    var title: String { rawValue.capitalized }
+}
+struct Effect: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var kind: EffectKind
+    var rate: Double = 0.5
+    var depth: Double = 0.75
+    var enabled: Bool = false
+}
+struct ShowProject: Codable {
+    var schemaVersion: Int = 1
+    var fixtures: [Fixture] = []
+    var cues: [Cue] = []
+    var effects: [Effect] = [Effect(name: "Intensity wave", kind: .sine), Effect(name: "Chase", kind: .chase), Effect(name: "Color wheel", kind: .rainbow)]
+    // Display universe 1 maps to Art-Net port-address 0.
+    var universe: Int = 1
+    var destination: String = "127.0.0.1"
+    static var demo: Self {
+        var project = Self()
+        project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
+        let warm = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, FixtureState(dimmer: 0.8, red: 1, green: 0.4, blue: 0.12)) })
+        let cool = Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id, FixtureState(dimmer: 0.7, red: 0.15, green: 0.4, blue: 1)) })
+        project.cues = [Cue(name: "Warm opening", levels: warm), Cue(name: "Blue scene", fadeSeconds: 2, levels: cool)]
+        return project
+    }
+    func validate() throws {
+        func fail(_ message: String) throws { throw ProjectError.invalid(message) }
+        guard schemaVersion == 1 else { try fail("This show uses an unsupported file version."); return }
+        guard (1...32768).contains(universe) else { try fail("Universe must be between 1 and 32768."); return }
+        guard !destination.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { try fail("Enter an output destination."); return }
+        guard Set(fixtures.map(\.id)).count == fixtures.count, Set(cues.map(\.id)).count == cues.count, Set(effects.map(\.id)).count == effects.count else { try fail("Duplicate identifiers in the project."); return }
+        var occupied = Set<Int>()
+        for fixture in fixtures {
+            guard fixture.address >= 1, fixture.address <= 513 - fixture.kind.footprint else { try fail("\(fixture.name) extends outside DMX channels 1–512."); return }
+            guard fixture.x.isFinite, fixture.y.isFinite else { try fail("Invalid fixture position."); return }
+            for channel in fixture.address..<(fixture.address + fixture.kind.footprint) {
+                guard occupied.insert(channel).inserted else { try fail("\(fixture.name) overlaps DMX channel \(channel)."); return }
+            }
+        }
+        for cue in cues {
+            guard cue.fadeSeconds.isFinite, (0...3600).contains(cue.fadeSeconds) else { try fail("Invalid cue fade time."); return }
+            for state in cue.levels.values {
+                guard [state.dimmer,state.red,state.green,state.blue,state.white].allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { try fail("Cue levels must be between 0 and 1."); return }
+            }
+        }
+        for effect in effects {
+            guard effect.rate.isFinite, (0...20).contains(effect.rate), effect.depth.isFinite, (0...1).contains(effect.depth) else { try fail("Invalid effect settings."); return }
+        }
+    }
+}
+enum ProjectError: LocalizedError {
+    case invalid(String)
+    var errorDescription: String? { switch self { case .invalid(let message): return message } }
+}
