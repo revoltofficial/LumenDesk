@@ -407,7 +407,7 @@ import UniformTypeIdentifiers
             } catch { errorMessage = error.localizedDescription; stopOutput() }
         }
     }
-    func renderedState(for id: UUID) -> FixtureState {
+    func renderedState(for id: UUID, applyMaster: Bool = true) -> FixtureState {
         var result = state(for: id)
         let index = project.fixtures.firstIndex(where: { $0.id == id }) ?? 0
         let count = max(1, project.fixtures.count)
@@ -446,12 +446,14 @@ import UniformTypeIdentifiers
                 result.blue = result.blue * (1 - depth) + color.blue * depth
             }
         }
-        if autopilotEnabled {
+        if autopilotEnabled, let fixture = project.fixtures.first(where: { $0.id == id }), fixture.autopilotRole != .manual {
+            let role = fixture.autopilotRole ?? (fixture.resolvedProfile.movingHead ? .beam : .wash)
+            let peers = project.fixtures.filter { ($0.autopilotRole ?? ($0.resolvedProfile.movingHead ? .beam : .wash)) == role }
             result = AutopilotRenderer.render(base: result, snapshot: music, style: musicStyle, strength: autopilotStrength,
-                beats: tempoClock.beats, index: index, moving: project.fixtures.first(where: { $0.id == id })?.resolvedProfile.movingHead == true,
-                fresh: clock() - lastMusicTime < 1)
+                beats: tempoClock.beats, index: peers.firstIndex(where: { $0.id == id }) ?? 0, moving: fixture.resolvedProfile.movingHead,
+                fresh: clock() - lastMusicTime < 1, role: role)
         }
-        result.dimmer *= blackout ? 0 : (master.isFinite ? min(1,max(0,master)) : 0)
+        if applyMaster { result.dimmer *= blackout ? 0 : (master.isFinite ? min(1,max(0,master)) : 0) }
         return result
     }
     var frame: [UInt8] {

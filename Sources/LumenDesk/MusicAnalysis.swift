@@ -90,32 +90,58 @@ struct MusicAnalyzer {
         return (3000/Double(bestLag),min(1,bestScore))
     }
 }
+enum AutopilotRole: String, Codable, CaseIterable {
+    case beam, wash, manual
+    var title: String { switch self { case .beam: return "Beam accents"; case .wash: return "Wash atmosphere"; case .manual: return "Manual only" } }
+}
+enum DirectorLook: Int, CaseIterable {
+    case mirrored, fan, crossing, alternating
+    var title: String { switch self { case .mirrored: return "Mirrored sweep"; case .fan: return "Outward fan"; case .crossing: return "Crossed beams"; case .alternating: return "Alternating accents" } }
+    static func current(beats: Double) -> Self { allCases[Int(floor(max(0,beats)/32)).quotientAndRemainder(dividingBy: allCases.count).remainder] }
+    static func point(_ look: Self,beats: Double,index: Int,quiet: Bool,drop: Bool,role: AutopilotRole) -> MotionPoint {
+        let side = index % 2 == 0 ? -1.0 : 1.0
+        let duration = role == .wash ? 32.0 : (quiet ? 32 : (drop ? 8 : 16))
+        let angle = beats / duration * 2 * Double.pi
+        switch look {
+        case .mirrored: return MotionPoint(x: side*sin(angle),y: cos(angle)*0.65)
+        case .fan: return MotionPoint(x: side*(0.6+0.4*sin(angle)),y: cos(angle)*0.4)
+        case .crossing: return MotionPoint(x: -side*(0.6+0.4*sin(angle)),y: sin(angle)*0.5)
+        case .alternating: return MotionPoint(x: side*cos(angle),y: sin(angle+Double(index%2)*Double.pi)*0.65)
+        }
+    }
+}
 enum AutopilotRenderer {
-    static func render(base: FixtureState,snapshot: MusicSnapshot,style: MusicStyle,strength: Double,beats: Double,index: Int,moving: Bool,fresh: Bool) -> FixtureState {
+    static func render(base: FixtureState,snapshot: MusicSnapshot,style: MusicStyle,strength: Double,beats: Double,index: Int,moving: Bool,fresh: Bool,role: AutopilotRole = .beam) -> FixtureState {
         var result = base
+        guard role != .manual else { return result }
         guard fresh, snapshot.section != .silence, snapshot.section != .waiting else { result.dimmer = 0; return result }
         let amount = min(1,max(0,strength))
-        // Auto is a tonal heuristic, not a trained genre classifier.
+        // Tonal heuristic only; the operator can explicitly choose the musical style.
         let resolved: MusicStyle = style == .auto ? (snapshot.brightness > 0.5 ? .disco : .techno) : style
         let palette = resolved == .disco ? EffectColor.disco : EffectColor.techno
-        let step = Int(floor(max(0,beats)/(snapshot.section == .musicalBreak ? 8 : 2)))
-        let c = palette[(step + index) % palette.count]
-        result.red = base.red*(1-amount)+c.red*amount
-        result.green = base.green*(1-amount)+c.green*amount
-        result.blue = base.blue*(1-amount)+c.blue*amount
+        let safeBeats = max(0,beats)
+        let phrase = Int(floor(safeBeats/32)), progress = safeBeats.truncatingRemainder(dividingBy: 32)
+        let blend = phrase == 0 ? 1 : min(1,progress/4)
+        let look = DirectorLook.current(beats: safeBeats)
+        let previous = DirectorLook.current(beats: max(0,safeBeats-32))
+        func color(_ phrase: Int) -> EffectColor { palette[(max(0,phrase)+(role == .beam ? index+1 : 0))%palette.count] }
+        let c = color(phrase), old = color(phrase-1)
+        result.red = base.red*(1-amount)+(old.red+(c.red-old.red)*blend)*amount
+        result.green = base.green*(1-amount)+(old.green+(c.green-old.green)*blend)*amount
+        result.blue = base.blue*(1-amount)+(old.blue+(c.blue-old.blue)*blend)*amount
         result.white *= 1-amount
-        let quiet = snapshot.section == .musicalBreak
-        let drop = snapshot.section == .drop
-        let phase = beats-floor(beats)
-        let pulse = 0.65+0.35*max(0,1-phase*3)
-        let intensity = quiet ? 0.22 : (drop ? 0.95 : 0.4+snapshot.energy*0.3)
-        result.dimmer = base.dimmer*(1-amount)+intensity*pulse*amount
+        let quiet = snapshot.section == .musicalBreak, drop = snapshot.section == .drop
+        let phase = safeBeats-floor(safeBeats)
+        let pulse = role == .wash ? 0.95+0.05*max(0,1-phase*3) : 0.65+0.35*max(0,1-phase*3)
+        let alternating = look == .alternating && role == .beam ? (Int(floor(safeBeats/2))%2 == index%2 ? 1.0 : 0.35) : 1.0
+        let intensity = quiet ? (role == .wash ? 0.28 : 0.16) : (drop ? (role == .wash ? 0.72 : 0.95) : 0.4+snapshot.energy*0.3)
+        result.dimmer = base.dimmer*(1-amount)+intensity*pulse*alternating*amount
         if moving {
-            let speed = quiet ? 16.0 : (drop ? 2.0 : 8.0)
-            let angle = (beats/speed + Double(index)*0.25)*2*Double.pi
-            let travel = amount*(quiet ? 0.025 : (drop ? 0.15 : 0.075))
-            result.pan = min(1,max(0,base.pan+sin(angle)*travel))
-            result.tilt = min(1,max(0,base.tilt+cos(angle)*travel*0.65))
+            let a = DirectorLook.point(previous,beats: safeBeats,index: index,quiet: quiet,drop: drop,role: role)
+            let b = DirectorLook.point(look,beats: safeBeats,index: index,quiet: quiet,drop: drop,role: role)
+            let travel = amount*(role == .wash ? 0.035 : (quiet ? 0.025 : (drop ? 0.15 : 0.075)))
+            result.pan = min(1,max(0,base.pan+(a.x+(b.x-a.x)*blend)*travel))
+            result.tilt = min(1,max(0,base.tilt+(a.y+(b.y-a.y)*blend)*travel))
         }
         return result
     }

@@ -1,0 +1,60 @@
+import XCTest
+@testable import LumenDesk
+final class DirectorTests: XCTestCase {
+    func testPhraseLookChangesOnlyEveryEightBars() {
+        XCTAssertEqual(DirectorLook.current(beats: 31.99),.mirrored)
+        XCTAssertEqual(DirectorLook.current(beats: 32),.fan)
+        XCTAssertEqual(DirectorLook.current(beats: 64),.crossing)
+        XCTAssertEqual(Set((0..<4).map { DirectorLook.current(beats: Double($0*32)).rawValue }).count,4)
+    }
+    func testRolePairMirrorsAndWashMovesLess() {
+        let music = MusicSnapshot(level: 0.2,energy: 0.8,section: .drop)
+        func render(_ i: Int,_ role: AutopilotRole) -> FixtureState {
+            AutopilotRenderer.render(base: .off,snapshot: music,style: .techno,strength: 1,beats: 2,index: i,moving: true,fresh: true,role: role)
+        }
+        let left = render(0,.beam), right = render(1,.beam), wash = render(0,.wash)
+        XCTAssertEqual(left.pan+right.pan,1,accuracy: 0.0001)
+        XCTAssertLessThan(abs(wash.pan-0.5),abs(left.pan-0.5))
+        XCTAssertLessThan(wash.dimmer,left.dimmer)
+    }
+    func testPhraseTransitionIsContinuousAndManualRoleUnchanged() {
+        let music = MusicSnapshot(level: 0.2,energy: 0.6,section: .groove)
+        func render(_ b: Double) -> FixtureState { AutopilotRenderer.render(base: .off,snapshot: music,style: .disco,strength: 1,beats: b,index: 0,moving: true,fresh: true) }
+        let a = render(31.999), b = render(32.001)
+        XCTAssertEqual(a.pan,b.pan,accuracy: 0.001); XCTAssertEqual(a.red,b.red,accuracy: 0.001)
+        XCTAssertEqual(AutopilotRenderer.render(base: .off,snapshot: music,style: .disco,strength: 1,beats: 2,index: 0,moving: true,fresh: true,role: .manual),.off)
+    }
+    @MainActor func testSaveLookIncludesAutopilotWithoutBakingMasterOrBlackout() throws {
+        let store = LightingStore(startTimer: false,clock: { 0 })
+        store.autopilotEnabled = true; store.autopilotStrength = 1
+        store.music = MusicSnapshot(level: 0.2,energy: 0.8,section: .drop); store.lastMusicTime = 0
+        store.master = 0.1; store.blackout = true
+        let id = store.project.fixtures[0].id
+        let expected = store.renderedState(for: id,applyMaster: false)
+        let cueID = store.saveAutopilotLook()
+        let cue = try XCTUnwrap(store.project.cues.first(where: { $0.id == cueID }))
+        XCTAssertEqual(cue.levels[id],expected); XCTAssertGreaterThan(expected.dimmer,0.5)
+        XCTAssertEqual(store.renderedState(for: id).dimmer,0)
+        let decoded = try JSONDecoder().decode(ShowProject.self,from: JSONEncoder().encode(store.project))
+        XCTAssertEqual(decoded.cues.last?.levels[id],expected)
+    }
+    func testRigTemplateProfilesRolesAndPatch() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let show = try JSONDecoder().decode(ShowProject.self,from: Data(contentsOf: root.appendingPathComponent("Examples/AYRA-NGEAR-rig.lumendesk.json")))
+        try show.validate()
+        XCTAssertEqual(show.fixtures.map(\.address),[1,10,19,28])
+        XCTAssertEqual(show.fixtures.map(\.autopilotRole),[.beam,.wash,.wash,.beam])
+        XCTAssertEqual(show.fixtures[1].resolvedProfile.bytes(for: FixtureState())[2],134)
+        XCTAssertEqual(show.fixtures[0].resolvedProfile.bytes(for: FixtureState())[1],0)
+    }
+    @MainActor func testManualFixtureBypassesAutopilotAndRolePersists() throws {
+        let store = LightingStore(startTimer: false,clock: { 0 })
+        store.project.fixtures[0].autopilotRole = .manual
+        let id = store.project.fixtures[0].id
+        store.autopilotEnabled = true; store.lastMusicTime = 0
+        store.music = MusicSnapshot(level: 0.2,energy: 1,section: .drop)
+        XCTAssertEqual(store.renderedState(for: id),store.state(for: id))
+        let show = try JSONDecoder().decode(ShowProject.self,from: JSONEncoder().encode(store.project))
+        XCTAssertEqual(show.fixtures[0].autopilotRole,.manual)
+    }
+}

@@ -40,6 +40,13 @@ final class MicrophoneListener {
     deinit { stop() }
 }
 extension LightingStore {
+    @discardableResult func saveAutopilotLook() -> UUID {
+        let cue = Cue(name: "Autopilot · \(DirectorLook.current(beats: tempoClock.beats).title) · \(project.cues.count+1)",
+                      levels: Dictionary(uniqueKeysWithValues: project.fixtures.map { ($0.id,renderedState(for: $0.id,applyMaster: false)) }))
+        project.cues.append(cue); selectedCueID = cue.id
+        return cue.id
+    }
+
     func startListening() {
         stopListening()
         let session = UUID(); audioSession = session
@@ -115,6 +122,10 @@ struct AutopilotControls: View {
             HStack { Text("Intensity"); Slider(value: $store.autopilotStrength,in: 0...1) }
             Text("\(store.music.section.rawValue) · tempo confidence \(Int(store.music.confidence*100))%")
             Text(store.music.bpm.map { "Estimated \($0.formatted(.number.precision(.fractionLength(1)))) BPM" } ?? "Waiting for a steady beat…").font(.caption)
+            Text("\(DirectorLook.current(beats: store.tempoClock.beats).title) · bar \(Int(store.tempoClock.beats/4)%8+1) of 8").font(.caption)
+            Text("Phrase timing follows BPM and Sync. Section detection estimates energy changes; it cannot predict an unknown track.").font(.caption).foregroundStyle(.secondary)
+            Button("Save this look") { store.saveAutopilotLook() }.disabled(!store.autopilotEnabled)
+            Text("Saved in the cue library. Turn Autopilot off to replay it; assign it to a board button in Edit board.").font(.caption).foregroundStyle(.secondary)
             Text("Breaks soften the look; strong returns add colour and movement. Blackout and Master always take priority. Stop exits Autopilot.").font(.caption).foregroundStyle(.secondary)
         }.padding(18).frame(width: 360)
     }

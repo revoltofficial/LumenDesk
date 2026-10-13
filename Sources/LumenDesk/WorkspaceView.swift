@@ -455,6 +455,9 @@ struct WorkspaceView: View {
                             Stepper(value: $fixture.address, in: 1...max(1, 513 - fixture.footprint)) { Text("DMX \(fixture.address)").monospacedDigit().frame(width: 75) }.frame(width: 135)
                             Button { store.removeFixture(id: fixture.id) } label: { Image(systemName: "trash") }.buttonStyle(.borderless)
                         }
+                        Picker("Autopilot role", selection: Binding(get: { fixture.autopilotRole ?? (fixture.resolvedProfile.movingHead ? .beam : .wash) }, set: { fixture.autopilotRole = $0 })) {
+                            ForEach(AutopilotRole.allCases,id: \.self) { Text($0.title).tag($0) }
+                        }.font(.caption).frame(maxWidth: 330)
                         if fixture.resolvedProfile.movingHead {
                             HStack {
                                 Text("Mount rotation")

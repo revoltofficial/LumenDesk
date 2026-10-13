@@ -1,0 +1,820 @@
+{
+  "schemaVersion": 1,
+  "fixtures": [
+    {
+      "id": "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+      "name": "AYRA MH1",
+      "kind": "movingHead",
+      "address": 1,
+      "x": 0.2,
+      "y": 0.42,
+      "profile": {
+        "id": "ayra.ero.microbeam.9ch.provisional",
+        "name": "Ayra ERO Micro Beam FX \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "dimmer",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "pan",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 255
+          },
+          {
+            "attribute": "red",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 4,
+        "maximumBeamDegrees": 4,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "beam",
+      "mountingHeight": 3
+    },
+    {
+      "id": "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+      "name": "N-GEAR MH3",
+      "kind": "movingHead",
+      "address": 10,
+      "x": 0.4,
+      "y": 0.42,
+      "profile": {
+        "id": "ngear.move.wash7.9ch.provisional",
+        "name": "N-GEAR MOVE WASH LIGHT 7 \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "pan",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "dimmer",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 134,
+            "constant": 0
+          },
+          {
+            "attribute": "red",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 25,
+        "maximumBeamDegrees": 25,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "wash",
+      "mountingHeight": 3
+    },
+    {
+      "id": "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+      "name": "N-GEAR MH4",
+      "kind": "movingHead",
+      "address": 19,
+      "x": 0.6,
+      "y": 0.42,
+      "profile": {
+        "id": "ngear.move.wash7.9ch.provisional",
+        "name": "N-GEAR MOVE WASH LIGHT 7 \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "pan",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "dimmer",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 134,
+            "constant": 0
+          },
+          {
+            "attribute": "red",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 25,
+        "maximumBeamDegrees": 25,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "wash",
+      "mountingHeight": 3
+    },
+    {
+      "id": "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+      "name": "AYRA MH2",
+      "kind": "movingHead",
+      "address": 28,
+      "x": 0.8,
+      "y": 0.42,
+      "profile": {
+        "id": "ayra.ero.microbeam.9ch.provisional",
+        "name": "Ayra ERO Micro Beam FX \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "dimmer",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "pan",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 255
+          },
+          {
+            "attribute": "red",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 4,
+        "maximumBeamDegrees": 4,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "beam",
+      "mountingHeight": 3
+    }
+  ],
+  "cues": [
+    {
+      "id": "48F8CD9A-E01F-4569-ADE1-DBBAE3EE0D01",
+      "name": "Violet atmosphere",
+      "fadeSeconds": 2,
+      "levels": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        }
+      ]
+    },
+    {
+      "id": "F38EADF3-4F35-46E7-B5BB-5D220A2A6689",
+      "name": "Disco colour",
+      "fadeSeconds": 2,
+      "levels": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        }
+      ]
+    },
+    {
+      "id": "C145D5D2-A0F9-4AB8-992A-6266602C510C",
+      "name": "Dark blue break",
+      "fadeSeconds": 2,
+      "levels": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        }
+      ]
+    }
+  ],
+  "effects": [],
+  "universe": 1,
+  "destination": "127.0.0.1",
+  "fixtureProfiles": [
+    {
+      "id": "ayra.ero.microbeam.9ch.provisional",
+      "name": "Ayra ERO Micro Beam FX \u00b7 9ch \u00b7 provisional",
+      "footprint": 9,
+      "channels": [
+        {
+          "attribute": "dimmer",
+          "offset": 1,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 2,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "pan",
+          "offset": 3,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "tilt",
+          "offset": 4,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 5,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 255
+        },
+        {
+          "attribute": "red",
+          "offset": 6,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "green",
+          "offset": 7,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "blue",
+          "offset": 8,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "white",
+          "offset": 9,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        }
+      ],
+      "panDegrees": 540,
+      "tiltDegrees": 270,
+      "minimumBeamDegrees": 4,
+      "maximumBeamDegrees": 4,
+      "gobos": [],
+      "colorUsesDimmer": false
+    },
+    {
+      "id": "ngear.move.wash7.9ch.provisional",
+      "name": "N-GEAR MOVE WASH LIGHT 7 \u00b7 9ch \u00b7 provisional",
+      "footprint": 9,
+      "channels": [
+        {
+          "attribute": "pan",
+          "offset": 1,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "tilt",
+          "offset": 2,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "dimmer",
+          "offset": 3,
+          "minimum": 0,
+          "maximum": 134,
+          "constant": 0
+        },
+        {
+          "attribute": "red",
+          "offset": 4,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "green",
+          "offset": 5,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "blue",
+          "offset": 6,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "white",
+          "offset": 7,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 8,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 9,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        }
+      ],
+      "panDegrees": 540,
+      "tiltDegrees": 270,
+      "minimumBeamDegrees": 25,
+      "maximumBeamDegrees": 25,
+      "gobos": [],
+      "colorUsesDimmer": false
+    }
+  ],
+  "fixtureGroups": [
+    {
+      "id": "A8EC2E12-4705-448E-BF6E-37453879AC81",
+      "name": "AYRA beams",
+      "fixtureIDs": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E"
+      ]
+    },
+    {
+      "id": "6277D4D7-BFC0-420B-864A-E8B15F493E2C",
+      "name": "N-GEAR washes",
+      "fixtureIDs": [
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D"
+      ]
+    }
+  ],
+  "liveBoard": {
+    "controls": [
+      {
+        "id": "DEFBBADE-0AC7-406E-A642-AD78B4DE9230",
+        "label": "AYRA + N-GEAR \u00b7 MUSIC DIRECTOR",
+        "action": "text",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 0,
+        "row": 0,
+        "width": 9,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      },
+      {
+        "id": "61AE9A4A-50CC-4E67-AB38-4F8B70EF53BF",
+        "label": "Violet atmosphere",
+        "action": "cue",
+        "targetID": "48F8CD9A-E01F-4569-ADE1-DBBAE3EE0D01",
+        "behavior": "trigger",
+        "column": 0,
+        "row": 1,
+        "width": 3,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "067FB6EE-240B-4F0A-A8DF-B1711FBCA52C",
+        "label": "Disco colour",
+        "action": "cue",
+        "targetID": "F38EADF3-4F35-46E7-B5BB-5D220A2A6689",
+        "behavior": "trigger",
+        "column": 3,
+        "row": 1,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "6C142932-F76F-4CD0-A8DC-C14C58C446D9",
+        "label": "Dark blue break",
+        "action": "cue",
+        "targetID": "C145D5D2-A0F9-4AB8-992A-6266602C510C",
+        "behavior": "trigger",
+        "column": 6,
+        "row": 1,
+        "width": 3,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "1ED72079-C1C5-4617-8B9C-858D83BD7966",
+        "label": "Tap BPM",
+        "action": "tapTempo",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 0,
+        "row": 2,
+        "width": 3,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      },
+      {
+        "id": "5F546985-C5A4-4AE2-9581-C368C2B71C59",
+        "label": "Sync phrase",
+        "action": "syncTempo",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 3,
+        "row": 2,
+        "width": 3,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      },
+      {
+        "id": "AF0247EA-97A0-4559-BCCC-5BC34AD4D442",
+        "label": "STOP",
+        "action": "stop",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 6,
+        "row": 2,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "E00C553D-8D4F-44E7-8B38-302368BAA5A3",
+        "label": "Blackout",
+        "action": "blackout",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 0,
+        "row": 3,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "AE87B02A-CCB8-414B-AC23-4A70D6827474",
+        "label": "LASER \u00b7 manual / profile pending",
+        "action": "text",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 3,
+        "row": 3,
+        "width": 6,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      }
+    ]
+  },
+  "tempo": {
+    "bpm": 120
+  },
+  "autopilot": {
+    "followTempo": true,
+    "style": "techno",
+    "strength": 0.8
+  }
+}

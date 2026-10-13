@@ -99,3 +99,5 @@ Live now includes BPM, Tap Tempo, Sync and a beat indicator. Each effect can fol
 ## Music Autopilot and effect paths
 
 The bottom-left transport contains tempo and experimental microphone Autopilot controls. Local music analysis estimates BPM and responds to energy changes, with Disco/Techno palettes and manual overrides. Live → Effects includes editable movement paths and Pulse, Scanner, Sparkle and Color chase patterns. See AUTOPILOT.md for operation and current limitations.
+
+See [DIRECTOR.md](DIRECTOR.md) for the AYRA/N-GEAR rig template, fixture roles, phrase choreography and Save this look.

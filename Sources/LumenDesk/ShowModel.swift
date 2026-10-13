@@ -18,6 +18,7 @@ struct Fixture: Identifiable, Codable {
     var mountingRotation: Double? = nil
     var invertPan: Bool? = nil
     var invertTilt: Bool? = nil
+    var autopilotRole: AutopilotRole? = nil
     var rotation: Double { mountingRotation ?? 0 }
     func outputState(_ state: FixtureState) -> FixtureState {
         var result = state
