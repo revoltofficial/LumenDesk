@@ -85,3 +85,9 @@ The demo contains the two original movement cue definitions; current live edits 
 ## Fixture calibration
 
 In Patch & Output, each moving head has Mount rotation (-180 to 180 degrees), Invert pan output and Invert tilt output. Rotation aligns the preview's hanging mount with the physical installation; positive 90 degrees turns the neutral audience direction toward stage right. Inversion reverses the outgoing normalized position before profile channel mapping, while cues and position controls retain logical values. Enable inversion only when compensating for reversed hardware movement. Mount rotation changes preview geometry, not DMX bytes. Settings are saved per fixture; older shows default to zero rotation and no inversion. Floor-mounted fixtures and motor-response simulation are not yet supported.
+
+## Custom live board
+
+Live → Board opens a configurable control surface. Edit board lets you add buttons/text, drag controls on a grid, resize them and change labels, font sizes, colors, assigned targets and layer/effect behavior. Open Custom-live-board-demo.lumendesk.json beside the app for a populated example. Layout saves in show files. See LIVE-BOARD.md for operation, limitations and the supplied provisional Ayra/N-GEAR 9-channel profile drafts.
+
+The custom-board build passed all 44 tests and local editing/scene/blackout checks. Its delivered app is LumenDesk-LiveBoard.app.
