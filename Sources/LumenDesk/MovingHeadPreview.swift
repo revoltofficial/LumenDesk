@@ -15,7 +15,8 @@ struct MovingHeadBeams: View {
                 let target = map(floor)
                 var footprint = Path(); footprint.move(to: map(first))
                 for point in points.dropFirst() { footprint.addLine(to: map(point)) }; footprint.closeSubpath()
-                let color = Color(red: state.red, green: state.green, blue: state.blue)
+                let white = fixture.resolvedProfile.supports(.white) ? state.white : 0
+                    let color = Color(red: min(1, state.red + white), green: min(1, state.green + white), blue: min(1, state.blue + white))
                 var beam = Path(); beam.move(to: origin)
                 // Show the ray to the floor; the floor ellipse is derived from the same cone.
                 beam.addLine(to: target)

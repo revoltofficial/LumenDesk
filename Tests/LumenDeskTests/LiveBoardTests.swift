@@ -1,6 +1,19 @@
 import XCTest
 @testable import LumenDesk
 final class LiveBoardTests: XCTestCase {
+    func testHardwareDraftMappingsAvoidNgearStrobeRange() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        func load(_ name: String) throws -> FixtureProfile { try JSONDecoder().decode(FixtureProfile.self, from: Data(contentsOf: root.appendingPathComponent(name))) }
+        let wash = try load("NGEAR-Move-Wash-7-9ch-profile.json")
+        let ayra = try load("Ayra-ERO-Micro-Beam-9ch-profile.json")
+        try wash.validate(); try ayra.validate()
+        XCTAssertEqual(wash.bytes(for: FixtureState(dimmer: 1, red: 1, green: 0, blue: 0, white: 1, pan: 0, tilt: 1)), [0,255,134,255,0,0,255,0,0])
+        XCTAssertEqual(wash.bytes(for: FixtureState(dimmer: 0))[2], 0)
+        XCTAssertEqual(ayra.bytes(for: FixtureState(dimmer: 1, pan: 0, tilt: 1)), [255,0,0,255,255,255,255,255,0])
+        XCTAssertFalse(ayra.supports(.zoom)); XCTAssertFalse(wash.supports(.gobo))
+        XCTAssertEqual(ayra.minimumBeamDegrees, ayra.maximumBeamDegrees)
+    }
+
     func testLayoutRoundTripAndBounds() throws {
         var show = ShowProject.demo
         var control = BoardControl(); control.label = "Movement"; control.action = .text; control.width = 3

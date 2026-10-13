@@ -92,7 +92,8 @@ struct WorkspaceView: View {
                 MovingHeadBeams()
                 ForEach(store.project.fixtures) { fixture in
                     let state = store.renderedState(for: fixture.id)
-                    let color = Color(red: state.red, green: state.green, blue: state.blue)
+                    let white = fixture.resolvedProfile.supports(.white) ? state.white : 0
+                    let color = Color(red: min(1, state.red + white), green: min(1, state.green + white), blue: min(1, state.blue + white))
                     let x = max(48, min(geo.size.width - 48, fixture.x * geo.size.width))
                     let y = max(58, min(geo.size.height - 68, fixture.y * geo.size.height))
                     ZStack {
