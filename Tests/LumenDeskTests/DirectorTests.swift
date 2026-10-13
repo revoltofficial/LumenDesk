@@ -85,6 +85,7 @@ final class DirectorTests: XCTestCase {
         store.blackout = true
         XCTAssertEqual(Array(store.frame[63..<72]),[UInt8](repeating: 0,count: 9))
         store.blackout = false; store.stop()
+        XCTAssertEqual(store.state(for: id).laserDMX?[0],0)
         XCTAssertEqual(Array(store.frame[63..<72]),[UInt8](repeating: 0,count: 9))
     }
 

@@ -335,6 +335,7 @@ import UniformTypeIdentifiers
     func stop() {
         let parked = Dictionary(uniqueKeysWithValues: project.fixtures.map { fixture in
             var value = renderedState(for: fixture.id); value.dimmer = 0
+            if fixture.resolvedProfile.isLaser { value.laserDMX?[0] = 0 }
             return (fixture.id, value)
         })
         autopilotEnabled = false
