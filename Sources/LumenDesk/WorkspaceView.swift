@@ -13,6 +13,8 @@ struct WorkspaceView: View {
     @State private var editingGroupID: UUID?
     @State private var groupName = ""
     @State private var groupMembers: Set<UUID> = []
+    @State private var extendingSelection = false
+    @State private var selectionModifiers: EventModifiers = []
     private let accent = Color(red: 0.43, green: 0.86, blue: 0.78)
 
     var body: some View {
@@ -42,6 +44,7 @@ struct WorkspaceView: View {
             transport
         }
         .background(Color(white: 0.10))
+        .onModifierKeysChanged(mask: [.command, .shift]) { selectionModifiers = $0 }
         .sheet(isPresented: $showingPatch) { patchSheet }
         .sheet(isPresented: $showingGroupEditor) { groupEditor }
         .confirmationDialog("Replace the selected cue with the current fixture levels?", isPresented: $confirmUpdate) {
@@ -99,7 +102,7 @@ struct WorkspaceView: View {
                     }
                     .frame(width: 96, height: 110).contentShape(Rectangle())
                     .position(x: x, y: y)
-                    .onTapGesture { store.selectFixture(id: fixture.id, extending: NSEvent.modifierFlags.contains(.command) || NSEvent.modifierFlags.contains(.shift)) }
+                    .onTapGesture { store.selectFixture(id: fixture.id, extending: extendingSelection || selectionModifiers.contains(.command) || selectionModifiers.contains(.shift)) }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Select \(fixture.name)")
                     .accessibilityAddTraits(.isButton)
@@ -126,6 +129,7 @@ struct WorkspaceView: View {
                 .pickerStyle(.segmented).frame(width: 180)
             Spacer()
             if mode == "Design" {
+                Toggle("Multi-select", isOn: $extendingSelection).toggleStyle(.button)
                 Button(action: store.captureCue) { Label("Capture cue", systemImage: "plus.square") }
             } else {
                 Button(action: store.goNext) { Label("Go Next", systemImage: "forward.end.fill") }.disabled(store.nextCueID == nil)
