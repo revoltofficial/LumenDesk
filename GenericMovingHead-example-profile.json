@@ -1,0 +1,99 @@
+{
+  "id": "example.head11",
+  "name": "Example Moving Head \u00b7 11ch",
+  "footprint": 11,
+  "channels": [
+    {
+      "attribute": "pan",
+      "offset": 1,
+      "minimum": 0,
+      "maximum": 65535,
+      "constant": 0,
+      "fineOffset": 2
+    },
+    {
+      "attribute": "tilt",
+      "offset": 3,
+      "minimum": 0,
+      "maximum": 65535,
+      "constant": 0,
+      "fineOffset": 4
+    },
+    {
+      "attribute": "dimmer",
+      "offset": 5,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "red",
+      "offset": 6,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "green",
+      "offset": 7,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "blue",
+      "offset": 8,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "zoom",
+      "offset": 9,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "gobo",
+      "offset": 10,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 0
+    },
+    {
+      "attribute": "constant",
+      "offset": 11,
+      "minimum": 0,
+      "maximum": 255,
+      "constant": 255
+    }
+  ],
+  "panDegrees": 540,
+  "tiltDegrees": 270,
+  "minimumBeamDegrees": 8,
+  "maximumBeamDegrees": 40,
+  "gobos": [
+    {
+      "name": "Open",
+      "dmx": 0,
+      "pattern": "open"
+    },
+    {
+      "name": "Dots",
+      "dmx": 32,
+      "pattern": "dots"
+    },
+    {
+      "name": "Star",
+      "dmx": 64,
+      "pattern": "star"
+    },
+    {
+      "name": "Bars",
+      "dmx": 96,
+      "pattern": "bars"
+    }
+  ],
+  "colorUsesDimmer": false
+}

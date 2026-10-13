@@ -47,6 +47,7 @@ struct FixtureProfile: Identifiable, Codable {
                 guard (1...footprint).contains(offset), occupied.insert(offset).inserted else { try fail("overlapping or out-of-range offsets."); return }
             }
         }
+        guard supports(.dimmer) || colorUsesDimmer || !channels.contains(where: { [.red, .green, .blue, .white].contains($0.attribute) }) else { try fail("color-only fixtures must use virtual dimming."); return }
         guard gobos.count <= 32, gobos.allSatisfy({ !$0.name.isEmpty && (0...255).contains($0.dmx) && ["open", "dots", "star", "bars"].contains($0.pattern) }) else { try fail("invalid gobo slots."); return }
         guard !supports(.gobo) || !gobos.isEmpty else { try fail("a gobo channel needs named slots."); return }
     }

@@ -8,7 +8,7 @@ Native Apple Silicon app builds successfully through GitHub Actions. The sequenc
 
 ## Implemented in source
 
-- Patch generic dimmer (1 channel), RGB (3 channels) and RGBW (4 channels) fixtures within one 512-channel universe. Validate overlaps and footprint bounds.
+- Patch generic dimmer (1 channel), RGB (3 channels), RGBW (4 channels), and moving-head (11 channel) fixtures within one 512-channel universe. Validate overlaps and footprint bounds.
 - Arrange fixtures on a draggable 2D stage plan and adjust intensity/color.
 - Capture looks as cues, rename cues, and trigger timed linear fades.
 - Apply global sine, chase and rainbow effects, master level and blackout.
@@ -41,7 +41,7 @@ Tests cover ArtDMX byte order, patch validation, save/load compatibility, blacko
 
 ## Remaining scope
 
-This is a small first implementation, not full Lightkey parity. Missing: fixture-profile editor/library, 16-bit attributes, pan/tilt/gobos, multiple universes, custom fade curves, release fades, editable preset replacement, MIDI/OSC/DMX input, keyboard binding editor, sACN, USB/OLA output, Hue, node discovery, undo/autosave, and hardware/long-duration tests. Existing Lightkey project import is also not implemented.
+This is a small first implementation, not full Lightkey parity. Missing: manufacturer fixture library/editor, multiple universes, custom fade curves, release fades, editable preset replacement, MIDI/OSC/DMX input, keyboard binding editor, sACN, USB/OLA output, Hue, node discovery, undo/autosave, and hardware/long-duration tests. Existing Lightkey project import is also not implemented.
 
 Use manufacturer-authored fixture specifications or suitably licensed libraries when expanding profiles. Art-Net protocol reference and product requirements: [Artistic Licence Art-Net](https://art-net.org.uk/). Product release requirements need to be checked before distribution. Art-Net™ Designed by and Copyright Artistic Licence Engineering Ltd.
 
@@ -62,3 +62,13 @@ In Design, select fixtures and set their levels. Open Presets and Capture preset
 New layer combines any saved presets in palette order, with later presets replacing overlapping values. Set priority (0–100) and fade-in time. Click its Activate button to overlay the scene; click Release to reveal the scene and remaining layers immediately. Higher priority wins per channel; equal priority uses latest activation. Independent color and intensity layers coexist. Effect bundles replace one another per fixture and switch immediately. Effect pattern phase remains global across the rig.
 
 Scenes and timed sequences continue underneath layers. Manual level edits take over the visible channel values, clear all active layers, and cancel the sequence. Stop clears layers, darkens the scene, and disables global effects. Capture cue saves visible channel levels, not effect bundles. Presets and layered cue definitions save in show files; active playback does not. Older show files still open. Deleting a preset also deletes its dependent layered cues. Removing a fixture removes it from presets; presets left empty and their dependent cues are deleted. Active layer definitions are snapshots until released and reactivated. Layer fades interpolate over the currently changing underlying look. Releases are immediate; release fades are not yet implemented.
+
+## Moving heads and fixture profiles
+
+Patch & Output contains the generic fixture library, profile import, and an Add moving-head demo button. The demo adds two heads and two four-second sweep cues to the current show. In Design choose Position for the pan/tilt pad or sliders, and Beam for zoom and a gobo selector. Pan/tilt and zoom act on supporting selected fixtures; gobo acts on the named fixture because wheels differ by profile. Position and Beam presets can be layered over ordinary scenes. Live Effects includes Pan / Tilt orbit.
+
+The generic 11-channel profile is an original demonstration mode: pan coarse/fine (1/2), tilt coarse/fine (3/4), dimmer (5), RGB (6–8), zoom (9), gobo (10: open=0, dots=32, star=64, bars=96), fixed open shutter (11=255). It has 540° pan, 270° tilt and 8–40° beam angle. It is not a manufacturer fixture mode. Real fixtures need a profile matching their exact manual/mode, including shutter-open values and physical ranges.
+
+The preview is a schematic top-down 12×8 metre floor with hanging heads (default height 3m, editable in Patch). Center pan faces the audience; center tilt points down. Head/yoke pose and cone intersection use the same rendered attributes as output. Full pan travel is linear across cues, not shortest-path circular rotation. Zoom changes the cone opening angle. Above-horizon rays have no floor spot; cones straddling the horizon have no bounded ellipse and are omitted. Gobo changes occur at the end of cue/preset fades and use original approximate patterns. This is not a calibrated photometric simulation: motor inertia, collision/occlusion, real gobo artwork and gobo rotation are not simulated. Blackout gates intensity while retaining movement channel values.
+
+See FIXTURE-PROFILES.md for the import format. Imported library entries and each patched fixture’s profile snapshot are saved in the show. Older shows default movement attributes to center and retain their previous RGB channel maps.

@@ -202,7 +202,9 @@ import UniformTypeIdentifiers
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             guard (try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= 1024 * 1024 else { throw ProjectError.invalid("Profiles must be smaller than 1 MiB.") }
-            let profile = try JSONDecoder().decode(FixtureProfile.self, from: Data(contentsOf: url))
+            let data = try Data(contentsOf: url)
+            guard data.count <= 1024 * 1024 else { throw ProjectError.invalid("Profiles must be smaller than 1 MiB.") }
+            let profile = try JSONDecoder().decode(FixtureProfile.self, from: data)
             try profile.validate()
             guard !profileLibrary.contains(where: { $0.id == profile.id }) else { throw ProjectError.invalid("That profile identifier is already in the library.") }
             var profiles = project.fixtureProfiles ?? []; profiles.append(profile); project.fixtureProfiles = profiles
