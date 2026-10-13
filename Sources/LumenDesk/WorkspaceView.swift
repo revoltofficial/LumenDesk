@@ -44,7 +44,7 @@ struct WorkspaceView: View {
             transport
         }
         .background(Color(white: 0.10))
-        .onModifierKeysChanged(mask: [.command, .shift]) { selectionModifiers = $0 }
+        .onModifierKeysChanged(mask: [.command, .shift]) { _, current in selectionModifiers = current }
         .sheet(isPresented: $showingPatch) { patchSheet }
         .sheet(isPresented: $showingGroupEditor) { groupEditor }
         .confirmationDialog("Replace the selected cue with the current fixture levels?", isPresented: $confirmUpdate) {
