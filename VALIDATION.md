@@ -1,6 +1,6 @@
 # Validation record
 
-Date: 13 October 2026. Status: source prototype, not a verified executable.
+Date: 13 October 2026. Current status: Apple Silicon executable built, 39 tests passed and native interface checked; hardware output untested. The initial table below records the earlier local compiler blocker.
 
 | Check | Result |
 |---|---|
@@ -71,3 +71,7 @@ Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38439002849
 Build 38441313892 compiled commit 5e44f1c8f32f181a67cacccf5453fed0cad187cf on the standard macOS 26 Apple Silicon runner. All 36 XCTest tests passed, including legacy-show orbit availability and Stop preserving the rendered position with movement effects. Release packaging passed. The downloaded arm64 app was assigned the local delivery bundle identifier local.lumendesk.movingheads and ad-hoc re-signed; strict deep signature verification passed.
 
 The final app launched on the user's macOS 15.6.1 machine. The saved moving-head demo opened with eight fixtures. The compact Color/Position/Beam tabs displayed correctly. Activating Heads · left showed intermediate pan/tilt and settled at pan -37.8 degrees, tilt 40.5 degrees. Stop darkened all eight fixtures while leaving both glyph poses and those pan/tilt values unchanged. The demo was left open with Art-Net output off. Real fixtures, mechanical response and photometric accuracy remain untested.
+
+## Per-fixture calibration — 2026-10-13
+
+Build 38442517604 compiled 9f61a72ad2b324d2a0d3be0a03d67b042c205617 successfully. All 39 tests passed, including rotated floor-ray and cone geometry, exact inverted 16-bit bytes, calibration persistence, legacy defaults and invalid rotation rejection. The downloaded delivery app passed strict deep ad-hoc signature verification and launched locally. Native UI checks confirmed separate controls for each head; Head 1 accepted 90-degree rotation and both inversion toggles while Head 2 remained at defaults. Settings were restored to defaults after the check. Art-Net output stayed off. Physical calibration requires hardware verification.

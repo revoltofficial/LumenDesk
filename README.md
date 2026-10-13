@@ -4,7 +4,7 @@ Original SwiftUI source prototype, version 0.1. The working name is LumenDesk. I
 
 ## Current build status
 
-Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group build passed all 18 tests and local selection/group UI checks; details are recorded in VALIDATION.md. The presets/layers build passed all 25 tests and local capture, composition, activation and release checks. The moving-head build passed all 36 tests plus local sweep, upward-tilt, zoom, profile-import and legacy-show checks. Hardware output remains untested.
+Native Apple Silicon app builds successfully through GitHub Actions. The sequence build passed all 14 tests and local UI checks. The fixture-group build passed all 18 tests and local selection/group UI checks; details are recorded in VALIDATION.md. The presets/layers build passed all 25 tests and local capture, composition, activation and release checks. The moving-head calibration build passed all 39 tests plus local sweep, upward-tilt, zoom, profile-import and legacy-show checks. Hardware output remains untested.
 
 ## Implemented in source
 
@@ -81,3 +81,7 @@ See FIXTURE-PROFILES.md for the import format. Imported library entries and each
 4. In Live, Effects → Pan / Tilt orbit animates the moving heads. Keep output off while exploring.
 
 The demo contains the two original movement cue definitions; current live edits and active playback are not saved. It is intended for preview, not a substitute for a hardware fixture’s exact channel map.
+
+## Fixture calibration
+
+In Patch & Output, each moving head has Mount rotation (-180 to 180 degrees), Invert pan output and Invert tilt output. Rotation aligns the preview's hanging mount with the physical installation; positive 90 degrees turns the neutral audience direction toward stage right. Inversion reverses the outgoing normalized position before profile channel mapping, while cues and position controls retain logical values. Enable inversion only when compensating for reversed hardware movement. Mount rotation changes preview geometry, not DMX bytes. Settings are saved per fixture; older shows default to zero rotation and no inversion. Floor-mounted fixtures and motor-response simulation are not yet supported.
