@@ -108,6 +108,8 @@ final class MovingHeadTests: XCTestCase {
         let store = LightingStore(startTimer: false, clock: { now })
         store.project = ShowProject(); store.addFixture(profile: .head)
         let fixture = store.project.fixtures[0]
+        // This test isolates fade interpolation and byte encoding; motion has its own integration tests.
+        store.project.motion = MotionSettings(enabled: false)
         store.setState(id: fixture.id, state: FixtureState(dimmer: 1, pan: 0, tilt: 0.5))
         let cue = Cue(name: "Sweep", fadeSeconds: 4, levels: [fixture.id: FixtureState(dimmer: 1, pan: 1, tilt: 0.75)])
         store.project.cues = [cue]; store.activateCue(id: cue.id)
@@ -173,7 +175,7 @@ final class MovingHeadTests: XCTestCase {
         XCTAssertEqual(store.state(for: head).pan, 0.5)
         store.project.effects = [Effect(name: "Orbit", kind: .circle, enabled: true)]
         store.phase = 0
-        XCTAssertNotEqual(store.renderedState(for: head).tilt, 0.5)
+        XCTAssertNotEqual(store.targetState(for: head).tilt, 0.5)
         XCTAssertEqual(store.renderedState(for: wash).tilt, 0.5)
         try store.project.validate()
     }

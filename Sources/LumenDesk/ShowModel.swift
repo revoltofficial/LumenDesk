@@ -136,6 +136,7 @@ struct ShowProject: Codable {
     var liveBoard: LiveBoard? = nil
     var tempo: TempoSettings? = nil
     var autopilot: AutopilotPreferences? = nil
+    var motion: MotionSettings? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -155,6 +156,7 @@ struct ShowProject: Codable {
         for profile in profiles { try profile.validate() }
         try liveBoard?.validate()
         guard (autopilot ?? AutopilotPreferences()).valid else { try fail("Invalid Autopilot intensity."); return }
+        guard (motion ?? MotionSettings()).valid else { try fail("Movement speed or acceleration is invalid."); return }
         guard (tempo ?? TempoSettings()).valid else { try fail("BPM must be between 30 and 300."); return }
         var occupied = Set<Int>()
         let fixtureIDs = Set(fixtures.map(\.id))

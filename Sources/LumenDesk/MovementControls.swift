@@ -32,6 +32,7 @@ struct MovementControls: View {
                     VStack(alignment: .leading, spacing: 10) {
                         axis("Pan", key: \.pan, range: profile.panDegrees)
                         axis("Tilt", key: \.tilt, range: profile.tiltDegrees)
+                        motionSettings
                         HStack {
                             Button("Center") { store.setSelectionPosition(pan: 0.5, tilt: 0.5) }
                             Button("Aim forward") { store.setSelectionPosition(pan: 0.5, tilt: 0.65) }
@@ -48,6 +49,24 @@ struct MovementControls: View {
                 Spacer()
             }
         }.padding(18)
+    }
+    private var motionSettings: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Smooth movement · all heads").font(.caption)
+            HStack {
+                Text("Speed °/s").font(.caption2)
+                TextField("Speed", value: Binding(get: { (store.project.motion ?? MotionSettings()).speed }, set: { value in
+                    guard value.isFinite, (1...720).contains(value) else { return }
+                    var settings = store.project.motion ?? MotionSettings(); settings.speed = value; store.project.motion = settings
+                }), format: .number).frame(width: 65).accessibilityLabel("Movement speed limit")
+                Text("Accel °/s²").font(.caption2)
+                TextField("Acceleration", value: Binding(get: { (store.project.motion ?? MotionSettings()).acceleration }, set: { value in
+                    guard value.isFinite, (1...3600).contains(value) else { return }
+                    var settings = store.project.motion ?? MotionSettings(); settings.acceleration = value; store.project.motion = settings
+                }), format: .number).frame(width: 65).accessibilityLabel("Movement acceleration limit")
+            }
+            Text("Limits apply to preview and output. Fast effects may take longer to reach their targets.").font(.caption2).foregroundStyle(.secondary)
+        }
     }
     private func axis(_ name: String, key: WritableKeyPath<FixtureState, Double>, range: Double) -> some View {
         VStack(alignment: .leading, spacing: 3) {

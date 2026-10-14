@@ -121,6 +121,7 @@ import UniformTypeIdentifiers
     private var fadeTo: [UUID: FixtureState] = [:]
     private var connectedDestination = ""
     private var lastOutputUniverse = 1
+    var motionPoses: [UUID: MotionPose] = [:]
 
     init(startTimer: Bool = true, clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.clock = clock
@@ -289,6 +290,7 @@ import UniformTypeIdentifiers
         }
         project.fixtures.removeAll { $0.id == id }
         fixtureStates.removeValue(forKey: id)
+        motionPoses.removeValue(forKey: id)
         for index in project.cues.indices { project.cues[index].levels.removeValue(forKey: id) }
         selectedFixtureIDs.remove(id)
         if var groups = project.fixtureGroups {
@@ -338,6 +340,7 @@ import UniformTypeIdentifiers
             if fixture.resolvedProfile.isLaser { value.laserDMX?[0] = 0 }
             return (fixture.id, value)
         })
+        for id in motionPoses.keys { motionPoses[id]?.park() }
         autopilotEnabled = false
         releaseAllLayers()
         cancelSequence()
@@ -384,6 +387,11 @@ import UniformTypeIdentifiers
     func resetTempoTick() { lastTick = clock() }
     func tick() {
         let now = clock()
+        let elapsed = max(0, now - lastTick)
+        // Seed new heads before a cue fade changes their base position.
+        for fixture in project.fixtures where fixture.resolvedProfile.movingHead && motionPoses[fixture.id] == nil {
+            motionPoses[fixture.id] = MotionPose(state: state(for: fixture.id), profile: fixture.resolvedProfile)
+        }
         if audioDemo {
             let beat = now.truncatingRemainder(dividingBy: 0.5)
             let section = Int(now / 12) % 3
@@ -403,6 +411,7 @@ import UniformTypeIdentifiers
             if let id = next, let cue = sequenceCues[id] { applyCue(cue) }
             if player.finished { cancelSequence() }
         }
+        updateMotion(seconds: elapsed)
         if outputEnabled {
             do {
                 try project.validate()
@@ -419,7 +428,7 @@ import UniformTypeIdentifiers
             } catch { errorMessage = error.localizedDescription; stopOutput() }
         }
     }
-    func renderedState(for id: UUID, applyMaster: Bool = true) -> FixtureState {
+    func targetState(for id: UUID, applyMaster: Bool = true) -> FixtureState {
         var result = state(for: id)
         let index = project.fixtures.firstIndex(where: { $0.id == id }) ?? 0
         let count = max(1, project.fixtures.count)
@@ -467,6 +476,30 @@ import UniformTypeIdentifiers
         }
         if applyMaster { result.dimmer *= blackout ? 0 : (master.isFinite ? min(1,max(0,master)) : 0) }
         return result
+    }
+    func updateMotion(seconds: Double) {
+        let settings = project.motion ?? MotionSettings()
+        let ids = Set(project.fixtures.filter { $0.resolvedProfile.movingHead }.map(\.id))
+        motionPoses = motionPoses.filter { ids.contains($0.key) }
+        for fixture in project.fixtures where fixture.resolvedProfile.movingHead {
+            let profile = fixture.resolvedProfile
+            let target = targetState(for: fixture.id, applyMaster: false)
+            var pose = motionPoses[fixture.id] ?? MotionPose(state: state(for: fixture.id), profile: profile)
+            if pose.panRange != profile.panDegrees || pose.tiltRange != profile.tiltDegrees {
+                // Keep normalized DMX position when a profile's travel range changes.
+                pose = MotionPose(state: pose.applying(to: target), profile: profile)
+            }
+            if settings.enabled { pose.advance(target: target, seconds: seconds, settings: settings) }
+            else { pose = MotionPose(state: target, profile: profile) }
+            motionPoses[fixture.id] = pose
+        }
+    }
+    func renderedState(for id: UUID, applyMaster: Bool = true) -> FixtureState {
+        let target = targetState(for: id, applyMaster: applyMaster)
+        guard (project.motion ?? MotionSettings()).enabled,
+              let fixture = project.fixtures.first(where: { $0.id == id }), fixture.resolvedProfile.movingHead else { return target }
+        let pose = motionPoses[id] ?? MotionPose(state: state(for: id), profile: fixture.resolvedProfile)
+        return pose.applying(to: target)
     }
     var frame: [UInt8] {
         var values = [UInt8](repeating: 0, count: 512)
@@ -523,6 +556,7 @@ import UniformTypeIdentifiers
             releaseAllLayers()
             stopListening()
             project = next
+            motionPoses = [:]
             syncTempo(); tempoClock.resetTaps()
             fadeStart = nil
             activeCueID = nil
