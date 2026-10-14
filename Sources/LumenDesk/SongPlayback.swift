@@ -137,7 +137,7 @@ extension LightingStore {
                     levels[fixture.id] = state
                 }
                 let cue = Cue(name:"Song · \(marker.name) \(index+1)",fadeSeconds:quiet ? 2 : 0.5,levels:levels)
-                cues.append(cue); events.append(SongCueEvent(time:marker.time,cueID:cue.id))
+                cues.append(cue); events.append(SongCueEvent(time:marker.time,cueID:cue.id,choreography:SongChoreography(style:quiet ? .gentle : (strong ? .energetic : .flow),strength:0.7,beatsPerCycle:quiet ? 16 : (strong ? 4 : 8))))
             }
             var proposed = project
             proposed.cues.append(contentsOf:cues); timeline.events = events; proposed.songTimeline = timeline

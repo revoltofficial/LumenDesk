@@ -4,6 +4,7 @@ struct SongCueEvent: Identifiable, Codable {
     var id = UUID()
     var time: Double
     var cueID: UUID
+    var choreography: SongChoreography? = nil
 }
 struct SongMarker: Identifiable, Codable {
     var id = UUID()
@@ -20,7 +21,7 @@ struct SongTimeline: Codable {
         func fail(_ text: String) throws { throw ProjectError.invalid(text) }
         guard duration.isFinite, (0.05...7200).contains(duration), waveform.count <= 1200, waveform.allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { try fail("Invalid song duration or waveform."); return }
         guard events.count <= 1000, Set(events.map(\.id)).count == events.count, Set(events.map(\.time)).count == events.count else { try fail("Cue events must have unique times and identifiers (up to 1000)."); return }
-        guard events.allSatisfy({ $0.time.isFinite && (0...duration).contains($0.time) && cueIDs.contains($0.cueID) }) else { try fail("Timeline cue is missing or outside the song."); return }
+        guard events.allSatisfy({ $0.time.isFinite && (0...duration).contains($0.time) && cueIDs.contains($0.cueID) && ($0.choreography?.valid ?? true) }) else { try fail("Timeline cue is missing or outside the song."); return }
         guard markers.count <= 256, Set(markers.map(\.id)).count == markers.count, markers.allSatisfy({ $0.time.isFinite && (0...duration).contains($0.time) && !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) else { try fail("Invalid song marker."); return }
     }
 }

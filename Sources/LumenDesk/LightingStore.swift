@@ -500,6 +500,14 @@ import UniformTypeIdentifiers
                 result.blue = result.blue * (1 - depth) + color.blue * depth
             }
         }
+        if timelineControlsLighting,
+           let fixture = project.fixtures.first(where: { $0.id == id }), !fixture.resolvedProfile.isLaser,
+           let event = songTimeline.events.filter({ $0.time <= timelinePosition }).max(by:{ $0.time < $1.time }),
+           let dance = event.choreography {
+            let peers = project.fixtures.filter { !$0.resolvedProfile.isLaser }
+            result = SongChoreographer.render(base:result,choreography:dance,seconds:timelinePosition-event.time,
+                bpm:bpm,index:peers.firstIndex(where:{$0.id == id}) ?? 0,count:peers.count,moving:fixture.resolvedProfile.movingHead)
+        }
         if autopilotEnabled, let fixture = project.fixtures.first(where: { $0.id == id }), fixture.autopilotRole != .manual, !fixture.resolvedProfile.isLaser {
             let role = fixture.autopilotRole ?? (fixture.resolvedProfile.movingHead ? .beam : .wash)
             let peers = project.fixtures.filter { ($0.autopilotRole ?? ($0.resolvedProfile.movingHead ? .beam : .wash)) == role }

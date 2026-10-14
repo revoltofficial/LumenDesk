@@ -44,7 +44,7 @@ struct ShowCreatorView: View {
                 }
                 eventEditor
                 markerEditor
-                Text("Drag cue blocks or edit their times. Scrubbing previews the lighting; moving heads blend through their limits. Audio stays local. Save Show stores the timeline and waveform; relink the audio after reopening. Analysis markers are suggestions. Generated shows use colour, dimmer and static head positions; lasers remain manual.").font(.caption2).foregroundStyle(.secondary)
+                Text("Drag cue blocks or edit their times. Scrubbing previews the lighting; moving heads blend through their limits. Audio stays local. Save Show stores the timeline and waveform; relink the audio after reopening. Analysis markers are suggestions. Generated shows include editable song-timed movement and colour choreography; lasers remain manual.").font(.caption2).foregroundStyle(.secondary)
             }.padding(14)
         }.clipped()
         .confirmationDialog("Replace timeline cues and markers with a generated show? Existing saved cues are kept.",isPresented:$confirmGeneration,titleVisibility:.visible) {
@@ -89,6 +89,7 @@ struct ShowCreatorView: View {
                     Text("s").font(.caption)
                     Text(store.project.cues.first(where:{$0.id == event.cueID})?.name ?? "Missing cue").font(.caption)
                     Button("Go") { store.selectedSongEvent = event.id; store.seekSong(event.time) }
+                    SongDanceEditor(eventID:event.id)
                     Spacer()
                     Button("Remove") { store.project.songTimeline?.events.removeAll {$0.id == event.id} }
                 }
@@ -143,5 +144,33 @@ private struct SongTimelineBlock: View {
                 store.selectedSongEvent = event.id
                 store.moveSongCue(event.id,time:(dragOrigin ?? event.time)+Double(value.translation.width)/width*duration)
             }.onEnded { _ in dragOrigin = nil }
+    }
+}
+
+private struct SongDanceEditor: View {
+    @EnvironmentObject var store: LightingStore
+    let eventID: UUID
+    private var dance: SongChoreography? { store.songTimeline.events.first(where:{$0.id == eventID})?.choreography }
+    private func set(_ value: SongChoreography?) {
+        guard let index = store.project.songTimeline?.events.firstIndex(where:{$0.id == eventID}) else { return }
+        store.project.songTimeline?.events[index].choreography = value
+    }
+    var body: some View {
+        HStack {
+            Picker("Dance",selection:Binding(get:{dance?.style},set:{style in
+                if let style { var value = dance ?? SongChoreography(); value.style = style; set(value) } else { set(nil) }
+            })) {
+                Text("Off").tag(Optional<SongDanceStyle>.none)
+                ForEach(SongDanceStyle.allCases) { style in Text(style.title).tag(Optional(style)) }
+            }.frame(width:130)
+            if let dance {
+                Slider(value:Binding(get:{self.dance?.strength ?? dance.strength},set:{strength in
+                    var value = self.dance ?? dance; value.strength = strength; set(value)
+                }),in:0...1).frame(width:65).accessibilityLabel("Choreography strength")
+                Picker("Cycle",selection:Binding(get:{self.dance?.beatsPerCycle ?? dance.beatsPerCycle},set:{beats in
+                    var value = self.dance ?? dance; value.beatsPerCycle = beats; set(value)
+                })) { ForEach([2.0,4,8,16,32],id:\.self) { beats in Text("\(Int(beats)) beats").tag(beats) } }.frame(width:120)
+            }
+        }
     }
 }
