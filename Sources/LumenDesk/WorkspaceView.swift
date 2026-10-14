@@ -168,6 +168,7 @@ struct WorkspaceView: View {
                 if !store.fixturesSupporting(\.red).isEmpty {
                     Divider()
                     VStack(alignment: .leading, spacing: 12) {
+                        ColorLibraryButton()
                         ColorPicker("Color", selection: Binding(get: {
                             return Color(red: store.selectionValue(\.red), green: store.selectionValue(\.green), blue: store.selectionValue(\.blue))
                         }, set: { color in
@@ -399,6 +400,7 @@ struct WorkspaceView: View {
         VStack(spacing: 10) {
             HStack {
                 MovementLibraryButton()
+                ColorLibraryButton()
                 Menu("Add effect") {
                     ForEach(EffectKind.allCases) { kind in
                         Button(kind.title) { store.project.effects.append(Effect(name: kind.title, kind: kind)) }

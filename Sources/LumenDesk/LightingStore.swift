@@ -458,6 +458,15 @@ import UniformTypeIdentifiers
             case .chase:
                 let step = Int((cycles * (effect.beatTiming == true ? Double(count) : 1)).truncatingRemainder(dividingBy: Double(count)))
                 result.dimmer *= index == step ? 1 : 1 - depth
+            case .colorPattern:
+                guard let fixture = project.fixtures.first(where: { $0.id == id }), fixture.resolvedProfile.supports(.red), !fixture.resolvedProfile.isLaser else { continue }
+                let peers = project.fixtures.filter { $0.resolvedProfile.supports(.red) && !$0.resolvedProfile.isLaser }
+                let sample = ColorPatternRenderer.sample(effect: effect,cycles: cycles,index: peers.firstIndex(where: { $0.id == id }) ?? 0,count: peers.count)
+                result.red = result.red*(1-depth)+sample.color.red*depth
+                result.green = result.green*(1-depth)+sample.color.green*depth
+                result.blue = result.blue*(1-depth)+sample.color.blue*depth
+                result.white *= 1-depth
+                if effect.colorIntensity == true { result.dimmer *= 1-depth+sample.intensity*depth }
             case .rainbow, .colorChase:
                 let color: EffectColor
                 if effect.kind == .colorChase {

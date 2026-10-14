@@ -58,6 +58,7 @@ struct EffectEditor: View {
     @Binding var effect: Effect
     @State private var editingPath = false
     @State private var browsingMovements = false
+    @State private var browsingColors = false
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -82,6 +83,9 @@ struct EffectEditor: View {
                     Button("Library…") { browsingMovements = true }
                     Button("Edit path…") { editingPath = true }
                 }
+                if effect.kind == .colorPattern || effect.kind == .colorChase || effect.kind == .rainbow {
+                    Button("Colour library…") { browsingColors = true }
+                }
                 if effect.kind == .colorChase {
                     Menu("Palette") { Button("Disco") { effect.colors = EffectColor.disco }; Button("Techno") { effect.colors = EffectColor.techno } }
                     ForEach(Array((effect.colors ?? EffectColor.disco).enumerated()), id: \.offset) { _, c in Circle().fill(c.color).frame(width: 14,height: 14) }
@@ -92,6 +96,7 @@ struct EffectEditor: View {
         }.padding(10).background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 8))
             .sheet(isPresented: $editingPath) { MovementPathEditor(effect: $effect) }
             .sheet(isPresented: $browsingMovements) { MovementLibraryView(effect: $effect) }
+            .sheet(isPresented: $browsingColors) { ColorLibraryView(effect: $effect) }
     }
 }
 struct MovementPathEditor: View {

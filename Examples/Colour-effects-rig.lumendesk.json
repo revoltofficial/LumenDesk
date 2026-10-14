@@ -1,0 +1,1894 @@
+{
+  "schemaVersion": 1,
+  "fixtures": [
+    {
+      "id": "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+      "name": "AYRA MH1",
+      "kind": "movingHead",
+      "address": 1,
+      "x": 0.2,
+      "y": 0.42,
+      "profile": {
+        "id": "ayra.ero.microbeam.9ch.provisional",
+        "name": "Ayra ERO Micro Beam FX \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "dimmer",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "pan",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 255
+          },
+          {
+            "attribute": "red",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 4,
+        "maximumBeamDegrees": 4,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "beam",
+      "mountingHeight": 3
+    },
+    {
+      "id": "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+      "name": "N-GEAR MH3",
+      "kind": "movingHead",
+      "address": 10,
+      "x": 0.4,
+      "y": 0.42,
+      "profile": {
+        "id": "ngear.move.wash7.9ch.provisional",
+        "name": "N-GEAR MOVE WASH LIGHT 7 \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "pan",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "dimmer",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 134,
+            "constant": 0
+          },
+          {
+            "attribute": "red",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 25,
+        "maximumBeamDegrees": 25,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "wash",
+      "mountingHeight": 3
+    },
+    {
+      "id": "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+      "name": "N-GEAR MH4",
+      "kind": "movingHead",
+      "address": 19,
+      "x": 0.6,
+      "y": 0.42,
+      "profile": {
+        "id": "ngear.move.wash7.9ch.provisional",
+        "name": "N-GEAR MOVE WASH LIGHT 7 \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "pan",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "dimmer",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 134,
+            "constant": 0
+          },
+          {
+            "attribute": "red",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 25,
+        "maximumBeamDegrees": 25,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "wash",
+      "mountingHeight": 3
+    },
+    {
+      "id": "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+      "name": "AYRA MH2",
+      "kind": "movingHead",
+      "address": 28,
+      "x": 0.8,
+      "y": 0.42,
+      "profile": {
+        "id": "ayra.ero.microbeam.9ch.provisional",
+        "name": "Ayra ERO Micro Beam FX \u00b7 9ch \u00b7 provisional",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "dimmer",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "pan",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "tilt",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "constant",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 255
+          },
+          {
+            "attribute": "red",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "green",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "blue",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "white",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 4,
+        "maximumBeamDegrees": 4,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "beam",
+      "mountingHeight": 3
+    },
+    {
+      "id": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+      "name": "Laserworld LA1",
+      "kind": "dimmer",
+      "address": 64,
+      "x": 0.5,
+      "y": 0.2,
+      "profile": {
+        "id": "laserworld.el400rgbmk2.9ch.provisional",
+        "name": "Laserworld EL-400RGB MK2 \u00b7 9ch \u00b7 manual draft",
+        "footprint": 9,
+        "channels": [
+          {
+            "attribute": "laser",
+            "offset": 1,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 2,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 3,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 4,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 5,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 6,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 7,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 8,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          },
+          {
+            "attribute": "laser",
+            "offset": 9,
+            "minimum": 0,
+            "maximum": 255,
+            "constant": 0
+          }
+        ],
+        "panDegrees": 540,
+        "tiltDegrees": 270,
+        "minimumBeamDegrees": 1,
+        "maximumBeamDegrees": 1,
+        "gobos": [],
+        "colorUsesDimmer": false
+      },
+      "autopilotRole": "manual"
+    }
+  ],
+  "cues": [
+    {
+      "id": "48F8CD9A-E01F-4569-ADE1-DBBAE3EE0D01",
+      "name": "Violet atmosphere",
+      "fadeSeconds": 2,
+      "levels": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+        {
+          "dimmer": 0.35,
+          "red": 0.35,
+          "green": 0.04,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        }
+      ]
+    },
+    {
+      "id": "F38EADF3-4F35-46E7-B5BB-5D220A2A6689",
+      "name": "Disco colour",
+      "fadeSeconds": 2,
+      "levels": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+        {
+          "dimmer": 0.7,
+          "red": 1,
+          "green": 0.05,
+          "blue": 0.45,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        }
+      ]
+    },
+    {
+      "id": "C145D5D2-A0F9-4AB8-992A-6266602C510C",
+      "name": "Dark blue break",
+      "fadeSeconds": 2,
+      "levels": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        },
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E",
+        {
+          "dimmer": 0.2,
+          "red": 0.05,
+          "green": 0.12,
+          "blue": 1,
+          "white": 0,
+          "pan": 0.5,
+          "tilt": 0.5,
+          "zoom": 0.35,
+          "gobo": 0
+        }
+      ]
+    }
+  ],
+  "effects": [
+    {
+      "id": "C82102D6-59BB-4632-94E9-2345AB510DB8",
+      "name": "Circle",
+      "kind": "circle",
+      "rate": 0.5,
+      "depth": 0.65,
+      "enabled": false,
+      "beatTiming": true,
+      "beatsPerCycle": 16,
+      "movement": "circle",
+      "arrangement": "spread",
+      "spread": 0.5
+    },
+    {
+      "id": "543062F9-9718-429E-864C-A134BBBE1897",
+      "name": "Palette fade",
+      "kind": "colorPattern",
+      "rate": 0.5,
+      "depth": 1,
+      "enabled": false,
+      "beatTiming": true,
+      "beatsPerCycle": 8,
+      "spread": 0.75,
+      "colorPattern": "fade",
+      "colorSmoothness": 1,
+      "colorPalette": "disco",
+      "colorIntensity": false,
+      "colors": [
+        {
+          "red": 1,
+          "green": 0,
+          "blue": 0.48
+        },
+        {
+          "red": 1,
+          "green": 0.72,
+          "blue": 0
+        },
+        {
+          "red": 0,
+          "green": 1,
+          "blue": 0.88
+        },
+        {
+          "red": 0.32,
+          "green": 0,
+          "blue": 1
+        }
+      ]
+    }
+  ],
+  "universe": 1,
+  "destination": "127.0.0.1",
+  "fixtureProfiles": [
+    {
+      "id": "ayra.ero.microbeam.9ch.provisional",
+      "name": "Ayra ERO Micro Beam FX \u00b7 9ch \u00b7 provisional",
+      "footprint": 9,
+      "channels": [
+        {
+          "attribute": "dimmer",
+          "offset": 1,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 2,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "pan",
+          "offset": 3,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "tilt",
+          "offset": 4,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 5,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 255
+        },
+        {
+          "attribute": "red",
+          "offset": 6,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "green",
+          "offset": 7,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "blue",
+          "offset": 8,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "white",
+          "offset": 9,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        }
+      ],
+      "panDegrees": 540,
+      "tiltDegrees": 270,
+      "minimumBeamDegrees": 4,
+      "maximumBeamDegrees": 4,
+      "gobos": [],
+      "colorUsesDimmer": false
+    },
+    {
+      "id": "ngear.move.wash7.9ch.provisional",
+      "name": "N-GEAR MOVE WASH LIGHT 7 \u00b7 9ch \u00b7 provisional",
+      "footprint": 9,
+      "channels": [
+        {
+          "attribute": "pan",
+          "offset": 1,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "tilt",
+          "offset": 2,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "dimmer",
+          "offset": 3,
+          "minimum": 0,
+          "maximum": 134,
+          "constant": 0
+        },
+        {
+          "attribute": "red",
+          "offset": 4,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "green",
+          "offset": 5,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "blue",
+          "offset": 6,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "white",
+          "offset": 7,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 8,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "constant",
+          "offset": 9,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        }
+      ],
+      "panDegrees": 540,
+      "tiltDegrees": 270,
+      "minimumBeamDegrees": 25,
+      "maximumBeamDegrees": 25,
+      "gobos": [],
+      "colorUsesDimmer": false
+    },
+    {
+      "id": "laserworld.el400rgbmk2.9ch.provisional",
+      "name": "Laserworld EL-400RGB MK2 \u00b7 9ch \u00b7 manual draft",
+      "footprint": 9,
+      "channels": [
+        {
+          "attribute": "laser",
+          "offset": 1,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 2,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 3,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 4,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 5,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 6,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 7,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 8,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        },
+        {
+          "attribute": "laser",
+          "offset": 9,
+          "minimum": 0,
+          "maximum": 255,
+          "constant": 0
+        }
+      ],
+      "panDegrees": 540,
+      "tiltDegrees": 270,
+      "minimumBeamDegrees": 1,
+      "maximumBeamDegrees": 1,
+      "gobos": [],
+      "colorUsesDimmer": false
+    }
+  ],
+  "fixtureGroups": [
+    {
+      "id": "A8EC2E12-4705-448E-BF6E-37453879AC81",
+      "name": "AYRA beams",
+      "fixtureIDs": [
+        "D0CC1FB8-D330-4E30-8A99-6AC6B6D1511C",
+        "A60E6A4B-395A-49F7-904D-C3011E54DD2E"
+      ]
+    },
+    {
+      "id": "6277D4D7-BFC0-420B-864A-E8B15F493E2C",
+      "name": "N-GEAR washes",
+      "fixtureIDs": [
+        "BCADC83B-21CD-4A1E-AF21-E868DFACBC13",
+        "F859C992-6FD8-403C-8772-3E57A1C0E08D"
+      ]
+    }
+  ],
+  "liveBoard": {
+    "controls": [
+      {
+        "id": "DEFBBADE-0AC7-406E-A642-AD78B4DE9230",
+        "label": "AYRA + N-GEAR \u00b7 MUSIC DIRECTOR",
+        "action": "text",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 0,
+        "row": 0,
+        "width": 9,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      },
+      {
+        "id": "61AE9A4A-50CC-4E67-AB38-4F8B70EF53BF",
+        "label": "Violet atmosphere",
+        "action": "cue",
+        "targetID": "48F8CD9A-E01F-4569-ADE1-DBBAE3EE0D01",
+        "behavior": "trigger",
+        "column": 0,
+        "row": 1,
+        "width": 3,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "067FB6EE-240B-4F0A-A8DF-B1711FBCA52C",
+        "label": "Disco colour",
+        "action": "cue",
+        "targetID": "F38EADF3-4F35-46E7-B5BB-5D220A2A6689",
+        "behavior": "trigger",
+        "column": 3,
+        "row": 1,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "6C142932-F76F-4CD0-A8DC-C14C58C446D9",
+        "label": "Dark blue break",
+        "action": "cue",
+        "targetID": "C145D5D2-A0F9-4AB8-992A-6266602C510C",
+        "behavior": "trigger",
+        "column": 6,
+        "row": 1,
+        "width": 3,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "1ED72079-C1C5-4617-8B9C-858D83BD7966",
+        "label": "Tap BPM",
+        "action": "tapTempo",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 0,
+        "row": 2,
+        "width": 3,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      },
+      {
+        "id": "5F546985-C5A4-4AE2-9581-C368C2B71C59",
+        "label": "Sync phrase",
+        "action": "syncTempo",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 3,
+        "row": 2,
+        "width": 3,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      },
+      {
+        "id": "AF0247EA-97A0-4559-BCCC-5BC34AD4D442",
+        "label": "STOP",
+        "action": "stop",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 6,
+        "row": 2,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "E00C553D-8D4F-44E7-8B38-302368BAA5A3",
+        "label": "Blackout",
+        "action": "blackout",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 0,
+        "row": 3,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "AE87B02A-CCB8-414B-AC23-4A70D6827474",
+        "label": "LASER \u00b7 manual controls in Design",
+        "action": "text",
+        "targetID": null,
+        "behavior": "trigger",
+        "column": 3,
+        "row": 3,
+        "width": 6,
+        "height": 1,
+        "color": "mint",
+        "fontSize": 14
+      },
+      {
+        "id": "3A863D9C-BAA5-4108-808B-FBAD4DC8A754",
+        "label": "Laser OFF",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 0,
+        "laserValue": 0,
+        "column": 0,
+        "row": 4,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "18A29F35-5715-49E1-B042-1B3C81AB1C7E",
+        "label": "Sound mode",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 0,
+        "laserValue": 50,
+        "column": 3,
+        "row": 4,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "E809DDCC-A0B3-4FAB-9819-28EA829FECFA",
+        "label": "Automatic mode",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 0,
+        "laserValue": 100,
+        "column": 6,
+        "row": 4,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "6A5E0936-3A32-474E-85D8-37A73F2D9F23",
+        "label": "DMX Dynamic",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 0,
+        "laserValue": 200,
+        "column": 9,
+        "row": 4,
+        "width": 3,
+        "height": 1,
+        "color": "orange",
+        "fontSize": 14
+      },
+      {
+        "id": "B5DCB913-7470-4D2A-906E-E2E3638B9761",
+        "label": "Double scan",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 1,
+        "laserValue": 127,
+        "column": 0,
+        "row": 5,
+        "width": 4,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "84BFEF37-881B-42CB-85D0-48C449C2D33A",
+        "label": "Vertical scan",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 1,
+        "laserValue": 135,
+        "column": 4,
+        "row": 5,
+        "width": 4,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "A382C0E0-B7F7-487A-BE2F-3CED35539F8E",
+        "label": "Vertical double",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 1,
+        "laserValue": 145,
+        "column": 8,
+        "row": 5,
+        "width": 4,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "3FD0B1A8-93B7-4F41-B8DC-3C772736E9A4",
+        "label": "Diagonal scan",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 1,
+        "laserValue": 94,
+        "column": 0,
+        "row": 6,
+        "width": 4,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "87553315-4176-44BA-A61C-7A46D66E7653",
+        "label": "Spinning scan",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 1,
+        "laserValue": 100,
+        "column": 4,
+        "row": 6,
+        "width": 4,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "3299E63D-1D68-45C5-9B7D-7C0103921E1F",
+        "label": "Single scan",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 1,
+        "laserValue": 116,
+        "column": 8,
+        "row": 6,
+        "width": 4,
+        "height": 1,
+        "color": "blue",
+        "fontSize": 14
+      },
+      {
+        "id": "80261C56-B084-46D8-BD34-E8709657D4DB",
+        "label": "Rainbow",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 7,
+        "laserValue": 0,
+        "column": 0,
+        "row": 7,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "EFAA91C0-CDCF-405E-BF3E-1C7C88F15C18",
+        "label": "White",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 7,
+        "laserValue": 2,
+        "column": 3,
+        "row": 7,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "920F1602-1D71-418A-9A58-E9BE3F1DF2D0",
+        "label": "Purple",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 7,
+        "laserValue": 4,
+        "column": 6,
+        "row": 7,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "89DF7580-F1F9-448A-A696-16AA201D97A5",
+        "label": "Light blue",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 7,
+        "laserValue": 6,
+        "column": 9,
+        "row": 7,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "5A4A0142-1B18-4AC4-9225-8F1AE9F11A83",
+        "label": "Green",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 7,
+        "laserValue": 8,
+        "column": 0,
+        "row": 8,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "B256013C-C349-465E-87A5-27B2B1554AC1",
+        "label": "Blue",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 7,
+        "laserValue": 10,
+        "column": 3,
+        "row": 8,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      },
+      {
+        "id": "5E34C615-6BB2-40BE-9B06-F6543ECD977E",
+        "label": "Red",
+        "action": "laser",
+        "targetID": "6F149F15-2EBB-4E86-A560-BF44FDFE2284",
+        "behavior": "trigger",
+        "laserChannel": 7,
+        "laserValue": 12,
+        "column": 6,
+        "row": 8,
+        "width": 3,
+        "height": 1,
+        "color": "pink",
+        "fontSize": 14
+      }
+    ]
+  },
+  "tempo": {
+    "bpm": 120
+  },
+  "autopilot": {
+    "followTempo": true,
+    "style": "techno",
+    "strength": 0.8
+  },
+  "movementPresets": [
+    {
+      "id": "D6EBB6EF-BEE2-4F9B-9571-8A87B246765C",
+      "name": "Circle",
+      "effect": {
+        "id": "C82102D6-59BB-4632-94E9-2345AB510DB8",
+        "name": "Circle",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "circle",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "72CCCA34-132F-493F-9F67-0331315F52BA",
+      "name": "Figure eight",
+      "effect": {
+        "id": "B3D873CF-2F89-45EF-8C2C-3F91E1763D18",
+        "name": "Figure eight",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "figureEight",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "6769594B-5B90-4F4A-B165-1E12D659896F",
+      "name": "Sweep",
+      "effect": {
+        "id": "D0FDC3BD-840D-47EE-BA1A-E0E4C906D48F",
+        "name": "Sweep",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "sweep",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "D1A5D296-FD85-4C5F-84B5-642A24BA0C8E",
+      "name": "Vertical sweep",
+      "effect": {
+        "id": "8B7535BB-E839-45E1-9488-3023A62D901F",
+        "name": "Vertical sweep",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "verticalSweep",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "411ECF82-0D71-4630-BA5F-84067483F373",
+      "name": "Fan",
+      "effect": {
+        "id": "E3670603-A3A3-4D86-8AED-23F9F5FF95DF",
+        "name": "Fan",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "fan",
+        "arrangement": "mirrored",
+        "spread": 0.5
+      },
+      "favorite": true
+    },
+    {
+      "id": "E0FAE9D8-A643-49AF-AB18-B6525153A928",
+      "name": "Wave",
+      "effect": {
+        "id": "546E35CD-3C0C-48E7-95A0-467E344BE3E9",
+        "name": "Wave",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "wave",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "97232815-EACB-4A7B-9D24-F8CB9B47EF89",
+      "name": "Spiral",
+      "effect": {
+        "id": "F6BA3DCF-7BC3-4A34-949E-94CD635BDA09",
+        "name": "Spiral",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "spiral",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": true
+    },
+    {
+      "id": "080FB1B1-750B-4CF4-9BAA-B3FCC7A4CA38",
+      "name": "Zigzag",
+      "effect": {
+        "id": "211DB0C7-1EE6-45BC-BBC2-85E4BF57D30C",
+        "name": "Zigzag",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "zigzag",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "58F2A6CC-B218-400A-B8D9-B0C042CCC592",
+      "name": "Cross",
+      "effect": {
+        "id": "235607D5-A36B-412D-B9DB-0B241CFB3976",
+        "name": "Cross",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "cross",
+        "arrangement": "mirrored",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "8C0FE2BD-7B9A-4FE0-BE2D-AEA5DD628091",
+      "name": "Smooth wander",
+      "effect": {
+        "id": "2B33D4B7-31D2-4AAC-8272-1835ACB372B0",
+        "name": "Smooth wander",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.65,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 16,
+        "movement": "wander",
+        "arrangement": "spread",
+        "spread": 0.5
+      },
+      "favorite": false
+    },
+    {
+      "id": "829AC0A8-397D-4D0A-8EE8-BCAF0F7292D9",
+      "name": "Slow atmosphere",
+      "effect": {
+        "id": "CA657E73-335E-49BD-B7B3-79F1ADC9FBD6",
+        "name": "Slow atmosphere",
+        "kind": "circle",
+        "rate": 0.5,
+        "depth": 0.5,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 64,
+        "movement": "atmosphere",
+        "arrangement": "spread",
+        "spread": 0.25
+      },
+      "favorite": true
+    }
+  ],
+  "movementFavorites": [
+    "fan",
+    "spiral",
+    "atmosphere"
+  ],
+  "motion": {
+    "enabled": true,
+    "speed": 90,
+    "acceleration": 180
+  },
+  "colorPresets": [
+    {
+      "id": "78100BFD-4584-4160-9798-71F0452238F4",
+      "name": "Palette fade",
+      "effect": {
+        "id": "543062F9-9718-429E-864C-A134BBBE1897",
+        "name": "Palette fade",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "fade",
+        "colorSmoothness": 1,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "5D0B9C9C-6AAB-4811-824A-C74FDA2C6D1C",
+      "name": "Palette chase",
+      "effect": {
+        "id": "AF4839C5-1F58-4B5E-B156-E1AEDB7C1524",
+        "name": "Palette chase",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "chase",
+        "colorSmoothness": 0,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "0BD60A16-0455-45CA-9814-713FA0A93807",
+      "name": "Ping-pong",
+      "effect": {
+        "id": "54B56412-F98E-4B8B-A142-E6EC901BEAEE",
+        "name": "Ping-pong",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "pingPong",
+        "colorSmoothness": 1,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "C94160E6-B53E-454E-9460-0AC0753A7E6A",
+      "name": "Alternating pairs",
+      "effect": {
+        "id": "FC32F66D-A619-419A-904B-8894381479F9",
+        "name": "Alternating pairs",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "alternating",
+        "colorSmoothness": 1,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "B5ECDDEB-8578-49F2-9B2A-7AC91DC8C6AA",
+      "name": "Rainbow",
+      "effect": {
+        "id": "5C8FAF13-029A-419D-A3DE-E1CEA78C7340",
+        "name": "Rainbow",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "rainbow",
+        "colorSmoothness": 1,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "ED81DC59-BA85-4BB5-93B2-5A72B8833DB4",
+      "name": "Rainbow wave",
+      "effect": {
+        "id": "09F0D4D2-8F8A-4FEA-977C-2A6455BCE8B6",
+        "name": "Rainbow wave",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "rainbowWave",
+        "colorSmoothness": 1,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "D8277841-B6DE-4F06-BBE9-7E74EBDAD664",
+      "name": "Comet",
+      "effect": {
+        "id": "D172240C-3BE0-4D13-BFDC-3CA197CB56A5",
+        "name": "Comet",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "comet",
+        "colorSmoothness": 1,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "515AD534-6E62-43FE-9B1D-006664A3631F",
+      "name": "Twinkle",
+      "effect": {
+        "id": "C196E28A-9CBD-4A2E-AF42-5B4F52A5435A",
+        "name": "Twinkle",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "twinkle",
+        "colorSmoothness": 1,
+        "colorPalette": "disco",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0.48
+          },
+          {
+            "red": 1,
+            "green": 0.72,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 1,
+            "blue": 0.88
+          },
+          {
+            "red": 0.32,
+            "green": 0,
+            "blue": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "BCC76FDA-F86A-4610-8AEE-6A9A286A9117",
+      "name": "Fire",
+      "effect": {
+        "id": "7A189F04-FD98-4F92-9AA5-D79F52CD8ADF",
+        "name": "Fire",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 8,
+        "spread": 0.75,
+        "colorPattern": "fire",
+        "colorSmoothness": 1,
+        "colorPalette": "warm",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0.18,
+            "blue": 0.01
+          },
+          {
+            "red": 1,
+            "green": 0.6,
+            "blue": 0.1
+          },
+          {
+            "red": 1,
+            "green": 0.85,
+            "blue": 0.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "A22DB429-57D0-4134-BC9A-8649A4A2041D",
+      "name": "Police",
+      "effect": {
+        "id": "02FE04F1-4AF8-4607-ADCA-37F401FD5B21",
+        "name": "Police",
+        "kind": "colorPattern",
+        "rate": 0.5,
+        "depth": 1,
+        "enabled": false,
+        "beatTiming": true,
+        "beatsPerCycle": 2,
+        "spread": 0.75,
+        "colorPattern": "police",
+        "colorSmoothness": 1,
+        "colorPalette": "police",
+        "colorIntensity": false,
+        "colors": [
+          {
+            "red": 1,
+            "green": 0,
+            "blue": 0
+          },
+          {
+            "red": 0,
+            "green": 0.08,
+            "blue": 1
+          }
+        ]
+      }
+    }
+  ]
+}

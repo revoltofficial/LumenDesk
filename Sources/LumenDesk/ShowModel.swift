@@ -93,9 +93,9 @@ struct SequenceSettings: Codable {
     var repeats = false
 }
 enum EffectKind: String, Codable, CaseIterable, Identifiable {
-    case sine, chase, rainbow, circle, pulse, scanner, sparkle, colorChase
+    case sine, chase, rainbow, circle, pulse, scanner, sparkle, colorChase, colorPattern
     var id: String { rawValue }
-    var title: String { self == .colorChase ? "Color chase" : self == .circle ? "Movement" : rawValue.capitalized }
+    var title: String { self == .colorPattern ? "Colour pattern" : self == .colorChase ? "Color chase" : self == .circle ? "Movement" : rawValue.capitalized }
 }
 struct Effect: Identifiable, Codable {
     var id = UUID()
@@ -118,9 +118,15 @@ struct Effect: Identifiable, Codable {
     var panSize: Double? = nil
     var tiltSize: Double? = nil
     var arrangement: MotionArrangement? = nil
+    var colorPattern: ColorPattern? = nil
+    var colorPalette: ColorPalette? = nil
+    var colorPhase: Double? = nil
+    var colorReverse: Bool? = nil
+    var colorSmoothness: Double? = nil
+    var colorIntensity: Bool? = nil
     var validTiming: Bool {
         cycleBeats.isFinite && [0.25, 0.5, 1, 2, 4, 8, 16, 32, 64].contains(cycleBeats)
-        && [motionPhase ?? 0, panSize ?? 1, tiltSize ?? 1].allSatisfy { $0.isFinite && (0...1).contains($0) }
+        && [motionPhase ?? 0, panSize ?? 1, tiltSize ?? 1, colorPhase ?? 0, colorSmoothness ?? 1].allSatisfy { $0.isFinite && (0...1).contains($0) }
         && (spread ?? 1).isFinite && (0...1).contains(spread ?? 1)
         && (pathPoints == nil || ((2...32).contains(pathPoints!.count) && pathPoints!.allSatisfy { $0.valid }))
         && (colors == nil || ((1...16).contains(colors!.count) && colors!.allSatisfy { $0.valid }))
@@ -145,6 +151,7 @@ struct ShowProject: Codable {
     var motion: MotionSettings? = nil
     var movementPresets: [MovementPreset]? = nil
     var movementFavorites: [MovementPattern]? = nil
+    var colorPresets: [ColorEffectPreset]? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -163,6 +170,8 @@ struct ShowProject: Codable {
         guard Set(profiles.map(\.id)).count == profiles.count, Set(profiles.map(\.id)).isDisjoint(with: Set(FixtureProfile.library.map(\.id))) else { try fail("Duplicate or reserved profile identifiers."); return }
         for profile in profiles { try profile.validate() }
         try liveBoard?.validate()
+        let colorEffects = colorPresets ?? []
+        guard colorEffects.count <= 64, Set(colorEffects.map(\.id)).count == colorEffects.count, colorEffects.allSatisfy({ $0.valid }) else { try fail("Invalid saved colour preset."); return }
         let movements = movementPresets ?? []
         guard movements.count <= 64, Set(movements.map(\.id)).count == movements.count, movements.allSatisfy({ $0.valid }) else { try fail("Invalid saved movement preset."); return }
         let favorites = movementFavorites ?? []
