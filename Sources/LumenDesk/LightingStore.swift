@@ -128,6 +128,7 @@ import UniformTypeIdentifiers
     @Published var importingSong = false
     @Published var selectedSongEvent: UUID?
     @Published var songVolume = 0.35
+    @Published var songAnalysis: SongAnalysis?
     var timelineControlsLighting = false
     var timelineFreezeMotion = false
     var songPlayer: AVAudioPlayer?

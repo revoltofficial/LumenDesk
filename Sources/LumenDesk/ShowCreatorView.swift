@@ -3,6 +3,7 @@ import SwiftUI
 struct ShowCreatorView: View {
     @EnvironmentObject var store: LightingStore
     @State private var cueID: UUID?
+    @State private var confirmGeneration = false
     private var timeline: SongTimeline { store.songTimeline }
     private func time(_ value: Double) -> String { String(format:"%02d:%04.1f",Int(value)/60,value.truncatingRemainder(dividingBy:60)) }
     var body: some View {
@@ -25,6 +26,13 @@ struct ShowCreatorView: View {
                     Text("Audio").font(.caption)
                     Slider(value:Binding(get:{store.songVolume},set:{value in store.songVolume = value; store.songPlayer?.volume = Float(value)}),in:0...1).frame(width:75).accessibilityLabel("Song volume")
                 }
+                if let analysis = store.songAnalysis {
+                    HStack {
+                        Text(analysis.bpm.map { "Estimated tempo: \(Int($0)) BPM · \(Int(analysis.confidence*100))% beat confidence" } ?? "Tempo uncertain — keep manual BPM").font(.caption)
+                        Button("Use suggested markers & BPM") { store.applySongAnalysis(generate:false) }
+                        Button("Generate show…") { confirmGeneration = true }
+                    }
+                }
                 waveform.frame(height:105)
                 HStack {
                     Picker("Cue",selection:Binding(get:{cueID ?? store.project.cues.first?.id},set:{cueID = $0})) {
@@ -36,9 +44,13 @@ struct ShowCreatorView: View {
                 }
                 eventEditor
                 markerEditor
-                Text("Drag cue blocks or edit their times. Scrubbing previews the lighting; moving heads blend through their limits. Audio stays local. Save Show stores the timeline and waveform; relink the audio after reopening. Section markers are manual in this release.").font(.caption2).foregroundStyle(.secondary)
+                Text("Drag cue blocks or edit their times. Scrubbing previews the lighting; moving heads blend through their limits. Audio stays local. Save Show stores the timeline and waveform; relink the audio after reopening. Analysis markers are suggestions. Generated shows use colour, dimmer and static head positions; lasers remain manual.").font(.caption2).foregroundStyle(.secondary)
             }.padding(14)
         }.clipped()
+        .confirmationDialog("Replace timeline cues and markers with a generated show? Existing saved cues are kept.",isPresented:$confirmGeneration,titleVisibility:.visible) {
+            Button("Generate and replace timeline") { store.applySongAnalysis(generate:true) }
+            Button("Cancel",role:.cancel) {}
+        }
     }
     private var waveform: some View {
         GeometryReader { geo in

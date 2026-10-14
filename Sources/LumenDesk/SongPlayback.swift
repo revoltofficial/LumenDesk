@@ -12,7 +12,7 @@ extension LightingStore {
         songPlayer?.pause(); timelinePlaying = false; timelineControlsLighting = false; timelineFreezeMotion = false
     }
     func resetSong() {
-        exitTimeline(); songPlayer = nil; timelinePosition = 0; songURL = nil
+        exitTimeline(); songAnalysis = nil; songPlayer = nil; timelinePosition = 0; songURL = nil
         songImportID = UUID(); songImportTask?.cancel(); songImportTask = nil; importingSong = false
     }
     func importSong() {
@@ -38,6 +38,7 @@ extension LightingStore {
                     timeline.markers = [SongMarker(time:0,name:"Intro"),SongMarker(time:10,name:"Break"),SongMarker(time:20,name:"Drop")]
                 }
                 try timeline.validate(cueIDs:Set(self.project.cues.map(\.id)))
+                self.songAnalysis = audio.analysis
                 self.project.songTimeline = timeline; self.songPlayer = player; self.songURL = url
                 player.volume = Float(self.songVolume); player.prepareToPlay()
                 self.timelinePosition = 0; self.timelineFreezeMotion = false; self.importingSong = false
@@ -106,5 +107,42 @@ extension LightingStore {
         var timeline = songTimeline
         guard timeline.markers.count < 256 else { return }
         timeline.markers.append(SongMarker(time:timelinePosition,name:name)); project.songTimeline = timeline
+    }
+}
+
+ extension LightingStore {
+    func applySongAnalysis(generate: Bool) {
+        guard let analysis = songAnalysis else { return }
+        exitTimeline()
+        var timeline = songTimeline
+        timeline.markers = analysis.markers
+        if let tempo = analysis.bpm { setManualBPM(tempo) }
+        if generate {
+            let fixtures = project.fixtures.filter { !$0.resolvedProfile.isLaser }
+            guard !fixtures.isEmpty else { errorMessage = "Patch a non-laser fixture before generating a show."; return }
+            var events: [SongCueEvent] = []
+            var cues: [Cue] = []
+            for (index,marker) in analysis.markers.enumerated() {
+                let quiet = marker.name == "Break?" || marker.name == "Intro"
+                let strong = marker.name == "Drop?"
+                let palette: [(Double,Double,Double)] = quiet ? [(0.15,0.05,0.7),(0.05,0.2,0.8)] : [(0.8,0.05,0.5),(0.05,0.7,1),(0.7,0.2,0.05)]
+                var levels: [UUID:FixtureState] = [:]
+                for (offset,fixture) in fixtures.enumerated() {
+                    let color = palette[(index+offset)%palette.count]
+                    var state = fixtureStates[fixture.id] ?? FixtureState()
+                    state.dimmer = quiet ? 0.3 : (strong ? 1 : 0.7)
+                    state.red = color.0; state.green = color.1; state.blue = color.2; state.white = 0
+                    state.pan = quiet ? 0.5 : (offset%2 == 0 ? 0.35 : 0.65)
+                    state.tilt = quiet ? 0.55 : 0.7
+                    levels[fixture.id] = state
+                }
+                let cue = Cue(name:"Song · \(marker.name) \(index+1)",fadeSeconds:quiet ? 2 : 0.5,levels:levels)
+                cues.append(cue); events.append(SongCueEvent(time:marker.time,cueID:cue.id))
+            }
+            var proposed = project
+            proposed.cues.append(contentsOf:cues); timeline.events = events; proposed.songTimeline = timeline
+            do { try proposed.validate(); project = proposed } catch { errorMessage = error.localizedDescription; return }
+        } else { project.songTimeline = timeline }
+        timelinePosition = 0; songPlayer?.currentTime = 0
     }
 }

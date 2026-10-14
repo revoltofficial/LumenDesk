@@ -5,6 +5,7 @@ struct SongAudioData: Sendable {
     var name: String
     var duration: Double
     var waveform: [Double]
+    var analysis: SongAnalysis
 }
 enum SongAudioReader {
     static func read(_ url: URL) throws -> SongAudioData {
@@ -13,6 +14,9 @@ enum SongAudioReader {
         guard rate > 0, length > 0, Double(length)/rate <= 7200 else { throw ProjectError.invalid("Choose audio shorter than two hours.") }
         let bins = min(1200,max(1,Int(length)))
         var peaks = [Double](repeating:0,count:bins)
+        let energyBins = max(1,Int(ceil(Double(length)/rate*50)))
+        var energy = [Double](repeating:0,count:energyBins)
+        var counts = [Int](repeating:0,count:energyBins)
         guard let buffer = AVAudioPCMBuffer(pcmFormat:file.processingFormat,frameCapacity:65536) else { throw ProjectError.invalid("Unable to decode this audio file.") }
         var offset: AVAudioFramePosition = 0
         while offset < length {
@@ -22,15 +26,18 @@ enum SongAudioReader {
             // Representative envelope; decoding is bounded to one chunk in memory.
             for frame in stride(from:0,to:Int(buffer.frameLength),by:16) {
                 let bin = min(bins-1,Int(Double(offset+AVAudioFramePosition(frame))/Double(length)*Double(bins)))
+                let energyBin = min(energyBins-1,Int(Double(offset+AVAudioFramePosition(frame))/rate*50))
                 for channel in 0..<Int(buffer.format.channelCount) {
                     let value = abs(Double(channels[channel][frame]))
-                    if value.isFinite { peaks[bin] = max(peaks[bin],value) }
+                    if value.isFinite { peaks[bin] = max(peaks[bin],value); energy[energyBin] += value*value; counts[energyBin] += 1 }
                 }
             }
             offset += AVAudioFramePosition(buffer.frameLength)
         }
         let maximum = max(0.000001,peaks.max() ?? 1)
-        return SongAudioData(name:url.lastPathComponent,duration:Double(length)/rate,waveform:peaks.map { min(1,$0/maximum) })
+        let rms = energy.indices.map { sqrt(energy[$0]/Double(max(1,counts[$0]))) }
+        let analysis = SongAnalyzer.analyze(energy:rms,duration:Double(length)/rate)
+        return SongAudioData(name:url.lastPathComponent,duration:Double(length)/rate,waveform:peaks.map { min(1,$0/maximum) },analysis:analysis)
     }
     static func demo(duration: Double = 30) throws -> URL {
         let rate = 22050.0
