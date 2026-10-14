@@ -1,6 +1,6 @@
 # Validation record
 
-Date: 13 October 2026. Current status: Apple Silicon executable built, 56 tests passed and native interface checked; hardware output untested. The initial table below records the earlier local compiler blocker.
+Date: 14 October 2026. Current status: Apple Silicon executable built, 70 tests passed and native interface checked; real audio capture and hardware output untested. The initial table below records the earlier local compiler blocker.
 
 | Check | Result |
 |---|---|
@@ -95,3 +95,13 @@ Build 38450532346 compiled f2bad2b2b372e443da8cc9b10d3fd9542d6449f6 on the macOS
 The downloaded arm64 app was assigned local.lumendesk.autopilot and a distinct delivery executable/display name to avoid input-routing conflicts with the older running builds. Strict deep ad-hoc signature verification passed. Native checks confirmed bottom-left BPM/Tap/Sync/Autopilot controls visible in Design and Live; the Autopilot panel and disabled lighting switch before listening; synthetic demo activation, a Drop state and roughly 120 BPM estimate; Disco style selection; stopping the demo; opening Effects; opening the path editor; changing a numeric pan offset; adding a point; dragging that point (pan changed to -0.36 and tilt to 0.25); resetting/closing the editor; the expanded effect menu and adding Color chase with palette controls. The Autopilot-effects-demo.lumendesk.json loaded successfully with eight fixtures, custom paths and new effect kinds, restoring 120 BPM with Autopilot off. Output stayed off throughout.
 
 Actual microphone capture, recorded-song tempo/structure accuracy, trained genre recognition and real fixture output are not verified. The current Auto style is a tonal heuristic, not a trained AI classifier. Synthetic tests and demo results do not establish live DJ performance.
+
+## Music Director, system audio and manual tempo — 2026-10-14
+
+Build 38458894485 compiled 7ebe62b681ef974d7d6be3b206cdabda4f309750 and passed all 69 tests. Build 38526559436 compiled feed58ee9e3caea1c3e5996c0ec002ef81476c79 and passed all 70 tests; release build and packaging also succeeded. The additional tempo test exercises manual BPM stability during synthetic beat input, fractional one-BPM stepping, boundaries, invalid input and Tap Tempo disabling audio following.
+
+The final downloaded Apple Silicon app was packaged as LumenDesk Director, ad-hoc re-signed locally and passed strict deep signature verification. Native UI checks confirmed +120→121, −121→120 and Follow detected BPM off afterward. The five-fixture template loaded with AYRA/N-GEAR groups and laser controls initially Off. Scan selector listed all six confirmed named patterns. Live Board showed Sound, Automatic, DMX Dynamic, six scan buttons and seven colour buttons. The preceding 69-test build also confirmed the microphone/computer-audio selector and computer-audio permission explanation. No real capture or permission was started. The final app is left with the rig on the live board, audio and output off.
+
+Actual microphone/system-audio capture, musical recognition accuracy, physical fixture output and mechanical response remain unverified. The director is an energy-based heuristic, not a trained song recognizer or drop predictor. NEXT-STEPS.md records the shared-chat priorities and distinguishes proposals from shipped features. Movement changes during effect enable/disable, Sync and Autopilot section changes still require a final position/velocity controller; these are not claimed fixed by this tempo increment.
+
+Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38526559436
