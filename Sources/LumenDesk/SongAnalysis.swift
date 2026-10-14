@@ -27,7 +27,7 @@ enum SongAnalyzer {
                     a += onsets[i]*onsets[i]; b += onsets[i-lag]*onsets[i-lag]
                 }
                 score /= max(0.000001,sqrt(a*b))
-                if score > best { best = score; tempo = Double(candidate) }
+                if score > best { best = score; tempo = rate*60/Double(lag) }
             }
         }
         let bpm: Double? = best >= 0.25 ? tempo : nil
@@ -46,7 +46,7 @@ enum SongAnalyzer {
         for section in sections.dropFirst() {
             let rise = section.1 > max(previous*1.6,maximum*0.6)
             let fall = section.1 < previous*0.55 && section.1 < maximum*0.4
-            if (rise || fall), section.0-lastTime >= 4 {
+            if (rise || fall), section.0-lastTime >= 4, markers.count < 128 {
                 // Keep strong energy changes near their measured location;
                 // phrase boundaries fill quiet gaps without inventing drops.
                 markers.append(SongMarker(time:section.0,name:rise ? "Drop?" : "Break?"))

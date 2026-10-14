@@ -19,4 +19,21 @@ final class SongAnalysisTests: XCTestCase {
         XCTAssertTrue(result.markers.contains { $0.name == "Drop?" && abs($0.time-20)<1 })
         XCTAssertTrue(result.markers.allSatisfy { $0.time < 30 })
     }
+    @MainActor func testGenerationKeepsSavedCuesAndExcludesLaser() throws {
+        let store = LightingStore(startTimer:false)
+        let root = URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        store.project = try JSONDecoder().decode(ShowProject.self,from:Data(contentsOf:root.appendingPathComponent("Examples/AYRA-NGEAR-rig.lumendesk.json")))
+        let saved = Set(store.project.cues.map(\.id))
+        let laser = store.project.fixtures[4].id
+        store.songAnalysis = SongAnalysis(bpm:120,confidence:0.9,markers:[SongMarker(time:0,name:"Intro"),SongMarker(time:20,name:"Drop?")])
+        store.applySongAnalysis(generate:true)
+        XCTAssertEqual(store.songTimeline.events.count,2)
+        XCTAssertTrue(saved.isSubset(of:Set(store.project.cues.map(\.id))))
+        for event in store.songTimeline.events {
+            let cue = try XCTUnwrap(store.project.cues.first { $0.id == event.cueID })
+            XCTAssertEqual(cue.levels.count,4); XCTAssertNil(cue.levels[laser])
+        }
+        XCTAssertFalse(store.outputEnabled); XCTAssertFalse(store.timelinePlaying)
+        try store.project.validate()
+    }
 }

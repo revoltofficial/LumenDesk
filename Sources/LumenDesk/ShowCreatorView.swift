@@ -28,7 +28,7 @@ struct ShowCreatorView: View {
                 }
                 if let analysis = store.songAnalysis {
                     HStack {
-                        Text(analysis.bpm.map { "Estimated tempo: \(Int($0)) BPM · \(Int(analysis.confidence*100))% beat confidence" } ?? "Tempo uncertain — keep manual BPM").font(.caption)
+                        Text(analysis.bpm.map { "Estimated tempo: \(Int($0)) BPM · \(Int(analysis.confidence*100))% beat repetition" } ?? "Tempo uncertain — keep manual BPM").font(.caption)
                         Button("Use suggested markers & BPM") { store.applySongAnalysis(generate:false) }
                         Button("Generate show…") { confirmGeneration = true }
                     }
