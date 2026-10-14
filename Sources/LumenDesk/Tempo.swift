@@ -35,10 +35,20 @@ extension LightingStore {
         guard value.isFinite, (30...300).contains(value) else { return }
         tick(); project.tempo = TempoSettings(bpm: value); tempoClock.resetTaps()
     }
+    func setManualBPM(_ value: Double) {
+        guard value.isFinite, (30...300).contains(value) else { return }
+        automaticTempo = false
+        setBPM(value)
+    }
+    func stepBPM(_ step: Double) {
+        guard step.isFinite else { return }
+        setManualBPM(min(300, max(30, bpm + step)))
+    }
     func syncTempo() {
         tempoClock.sync(); phase = 0; resetTempoTick()
     }
     func tapTempo() {
+        automaticTempo = false
         let now = tempoNow()
         if let value = tempoClock.tap(at: now) { project.tempo = TempoSettings(bpm: value) }
         syncTempo()
@@ -49,7 +59,12 @@ struct TempoControls: View {
     var body: some View {
         HStack(spacing: 6) {
             Text("BPM").font(.caption)
-            TextField("BPM", value: Binding(get: { store.bpm }, set: { store.setBPM($0) }), format: .number.precision(.fractionLength(0...1))).textFieldStyle(.roundedBorder).frame(width: 65)
+            Button { store.stepBPM(-1) } label: { Image(systemName: "minus") }
+                .accessibilityLabel("Decrease BPM").help("Decrease by 1 BPM and use manual tempo").disabled(store.bpm <= 30)
+            TextField("BPM", value: Binding(get: { store.bpm }, set: { store.setManualBPM($0) }), format: .number.precision(.fractionLength(0...1))).textFieldStyle(.roundedBorder).frame(width: 65)
+                .accessibilityLabel("Manual BPM").help("Type an exact BPM (30–300). This switches off automatic tempo following.")
+            Button { store.stepBPM(1) } label: { Image(systemName: "plus") }
+                .accessibilityLabel("Increase BPM").help("Increase by 1 BPM and use manual tempo").disabled(store.bpm >= 300)
             Button("Tap", action: store.tapTempo)
             Button("Sync", action: store.syncTempo).help("Restart the shared beat and all effect phases together")
             HStack(spacing: 5) {

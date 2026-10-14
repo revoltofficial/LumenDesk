@@ -1,6 +1,26 @@
 import XCTest
 @testable import LumenDesk
 final class TempoTests: XCTestCase {
+    @MainActor func testManualTempoDisablesAudioFollowingAndStaysStable() {
+        let store = LightingStore(startTimer: false, clock: { 0 })
+        store.automaticTempo = true
+        store.setManualBPM(127.5)
+        XCTAssertFalse(store.automaticTempo)
+        for i in 0..<500 {
+            let time = Double(i) * 0.02
+            let kick = time.truncatingRemainder(dividingBy: 0.5) < 0.06
+            store.receiveMusic(level: kick ? 0.3 : 0.04, bass: kick ? 0.25 : 0.02, high: 0.05, at: time)
+        }
+        XCTAssertEqual(store.bpm, 127.5)
+        store.stepBPM(1); XCTAssertEqual(store.bpm, 128.5)
+        store.stepBPM(-1); XCTAssertEqual(store.bpm, 127.5)
+        store.automaticTempo = true
+        store.setManualBPM(.nan)
+        XCTAssertTrue(store.automaticTempo); XCTAssertEqual(store.bpm, 127.5)
+        store.setManualBPM(300); store.stepBPM(1); XCTAssertEqual(store.bpm, 300)
+        store.setManualBPM(30); store.stepBPM(-1); XCTAssertEqual(store.bpm, 30)
+        store.automaticTempo = true; store.tapTempo(); XCTAssertFalse(store.automaticTempo)
+    }
     func testTapAverageAndGapReset() {
         var clock = TempoClock()
         XCTAssertNil(clock.tap(at: 0))
