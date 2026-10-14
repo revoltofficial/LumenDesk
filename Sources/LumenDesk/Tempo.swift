@@ -15,6 +15,7 @@ struct TempoClock {
         if abs(correction) < 0.25 { beats += correction*0.4 }
     }
     mutating func sync() { beats = 0 }
+    mutating func seek(beats value: Double) { if value.isFinite && value >= 0 { beats = value } }
     mutating func resetTaps() { taps = [] }
     mutating func tap(at now: TimeInterval) -> Double? {
         guard now.isFinite else { return nil }

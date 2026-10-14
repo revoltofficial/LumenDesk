@@ -34,6 +34,7 @@ struct WorkspaceView: View {
                             else { designControls }
                         }.frame(height: 260).clipped()
                     }
+                    else if mode == "Show Creator" { ShowCreatorView().frame(height:320) }
                     else if mode == "Presets" { PresetWorkspace().frame(height: 230) }
                     else { liveControls.frame(height: 300) }
                 }
@@ -139,16 +140,16 @@ struct WorkspaceView: View {
 
     private var modeBar: some View {
         HStack {
-            Picker("Workspace", selection: $mode) { Text("Design").tag("Design"); Text("Live").tag("Live"); Text("Presets").tag("Presets") }
-                .pickerStyle(.segmented).frame(width: 250)
+            Picker("Workspace", selection: $mode) { Text("Design").tag("Design"); Text("Live").tag("Live"); Text("Presets").tag("Presets"); Text("Show Creator").tag("Show Creator") }
+                .pickerStyle(.segmented).frame(width: 310)
             if mode == "Design" {
-                Picker("Fixture controls", selection: $designTab) { Text("Color").tag("Color"); Text("Position").tag("Position"); Text("Beam").tag("Beam") }.pickerStyle(.segmented).labelsHidden().frame(width: 210)
+                Picker("Fixture controls", selection: $designTab) { Text("Color").tag("Color"); Text("Position").tag("Position"); Text("Beam").tag("Beam") }.pickerStyle(.segmented).labelsHidden().frame(width: 180)
             }
             Spacer(minLength: 4)
-            if mode != "Live" {
+            if mode == "Design" || mode == "Presets" {
                 Toggle("Multi-select", isOn: $extendingSelection).toggleStyle(.button)
                 Button(action: store.captureCue) { Label("Capture cue", systemImage: "plus.square") }
-            } else {
+            } else if mode == "Live" {
                 Button(action: store.goNext) { Label("Go Next", systemImage: "forward.end.fill") }.disabled(store.nextCueID == nil)
             }
         }.padding(.horizontal, 18).frame(height: 46)

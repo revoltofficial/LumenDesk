@@ -152,6 +152,7 @@ struct ShowProject: Codable {
     var movementPresets: [MovementPreset]? = nil
     var movementFavorites: [MovementPattern]? = nil
     var colorPresets: [ColorEffectPreset]? = nil
+    var songTimeline: SongTimeline? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -170,6 +171,7 @@ struct ShowProject: Codable {
         guard Set(profiles.map(\.id)).count == profiles.count, Set(profiles.map(\.id)).isDisjoint(with: Set(FixtureProfile.library.map(\.id))) else { try fail("Duplicate or reserved profile identifiers."); return }
         for profile in profiles { try profile.validate() }
         try liveBoard?.validate()
+        try songTimeline?.validate(cueIDs: Set(cues.map(\.id)))
         let colorEffects = colorPresets ?? []
         guard colorEffects.count <= 64, Set(colorEffects.map(\.id)).count == colorEffects.count, colorEffects.allSatisfy({ $0.valid }) else { try fail("Invalid saved colour preset."); return }
         let movements = movementPresets ?? []

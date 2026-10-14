@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import Combine
 import UniformTypeIdentifiers
 
@@ -115,13 +116,25 @@ import UniformTypeIdentifiers
     private let output = ArtNetOutput()
     private var timer: Timer?
     private var lastTick = ProcessInfo.processInfo.systemUptime
-    private var fadeStart: TimeInterval?
+    var fadeStart: TimeInterval?
     private var fadeDuration: Double = 0
     private var fadeFrom: [UUID: FixtureState] = [:]
     private var fadeTo: [UUID: FixtureState] = [:]
     private var connectedDestination = ""
     private var lastOutputUniverse = 1
     var motionPoses: [UUID: MotionPose] = [:]
+    @Published var timelinePosition = 0.0
+    @Published var timelinePlaying = false
+    @Published var importingSong = false
+    @Published var selectedSongEvent: UUID?
+    @Published var songVolume = 0.35
+    var timelineControlsLighting = false
+    var timelineFreezeMotion = false
+    var songPlayer: AVAudioPlayer?
+    var songURL: URL?
+    var songImportID = UUID()
+    var songImportTask: Task<SongAudioData,Error>?
+
 
     init(startTimer: Bool = true, clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.clock = clock
@@ -214,6 +227,7 @@ import UniformTypeIdentifiers
         fadeFrom[id] = current; fadeTo[id] = current
     }
     func setState(id: UUID, state: FixtureState) {
+        exitTimeline()
         takeOverLayers()
         cancelSequence()
         fadeStart = nil
@@ -305,6 +319,7 @@ import UniformTypeIdentifiers
         selectedCueID = cue.id
     }
     func activateCue(id: UUID) {
+        exitTimeline()
         guard let cue = project.cues.first(where: { $0.id == id }) else { return }
         cancelSequence()
         applyCue(cue)
@@ -332,6 +347,7 @@ import UniformTypeIdentifiers
         if sequenceCues[id] != nil { cancelSequence() }
         if activeCueID == id { stop() }
         project.cues.removeAll { $0.id == id }
+        project.songTimeline?.events.removeAll { $0.cueID == id }
         if selectedCueID == id { selectedCueID = project.cues.first?.id }
     }
     func stop() {
@@ -340,6 +356,7 @@ import UniformTypeIdentifiers
             if fixture.resolvedProfile.isLaser { value.laserDMX?[0] = 0 }
             return (fixture.id, value)
         })
+        exitTimeline(); songPlayer?.currentTime = 0; timelinePosition = 0
         for id in motionPoses.keys { motionPoses[id]?.park() }
         autopilotEnabled = false
         releaseAllLayers()
@@ -354,6 +371,7 @@ import UniformTypeIdentifiers
         return player.pausedRemaining ?? max(0, player.deadline - clock())
     }
     func startSequence() {
+        exitTimeline()
         do { try project.validate() } catch { errorMessage = error.localizedDescription; return }
         cancelSequence()
         guard let player = SequencePlayer(cues: project.cues, settings: project.sequenceSettings ?? SequenceSettings(), now: clock()) else { return }
@@ -397,8 +415,11 @@ import UniformTypeIdentifiers
             let section = Int(now / 12) % 3
             receiveMusic(level: section == 1 ? 0.025 : (beat < 0.06 ? 0.3 : 0.1), bass: section == 1 ? 0.01 : 0.14, high: section == 2 ? 0.12 : 0.05, at: now)
         }
-        tempoClock.advance(seconds: max(0, now - lastTick), bpm: bpm)
-        phase += min(0.25, max(0, now - lastTick))
+        if timelineControlsLighting { updateSongTimeline() }
+        else {
+            tempoClock.advance(seconds: max(0, now - lastTick), bpm: bpm)
+            phase += min(0.25, max(0, now - lastTick))
+        }
         lastTick = now
         if let start = fadeStart, sequencePlayer?.isPaused != true {
             let fraction = fadeDuration <= 0 ? 1 : min(1, (now - start) / fadeDuration)
@@ -411,7 +432,7 @@ import UniformTypeIdentifiers
             if let id = next, let cue = sequenceCues[id] { applyCue(cue) }
             if player.finished { cancelSequence() }
         }
-        updateMotion(seconds: elapsed)
+        updateMotion(seconds: timelineControlsLighting && timelineFreezeMotion ? 0 : elapsed)
         if outputEnabled {
             do {
                 try project.validate()
@@ -566,6 +587,7 @@ import UniformTypeIdentifiers
             cancelSequence()
             releaseAllLayers()
             stopListening()
+            resetSong()
             project = next
             motionPoses = [:]
             syncTempo(); tempoClock.resetTaps()
