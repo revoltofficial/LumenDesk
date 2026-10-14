@@ -8,9 +8,9 @@ Manual BPM entry and the new −/+ buttons switch off automatic tempo following.
 
 The delivered director also includes microphone/computer-audio input, the five-fixture rig, manual Laserworld mode/colour/scan controls, beam/wash roles, eight-bar look changes and capture of a generated static look as a cue. Real audio capture and fixture output still need testing.
 
-## Next: movement stability
+## Implemented: movement stability
 
-Existing cue fades interpolate absolute positions, and Stop parks the rendered pose. Effects can still change their positional offset immediately when enabled, changed or synchronized; Autopilot energy-section changes also alter travel immediately. These require a shared final motion controller, updated once per engine tick and used by both preview and DMX output. It should track current position/velocity, enforce degree-based speed and acceleration limits, remain inside calibrated travel, and avoid angular wrap shortcuts. Reads of renderedState must not advance motion: drawing multiple views must not change output. Stop must park the filtered pose. Test mode changes, path changes, tempo Sync, cue interruption, reversals, long frames, fixture removal and calibration before hardware testing.
+The shared motion controller now runs once per engine tick and drives both preview and DMX positions. It tracks position and velocity, enforces adjustable degree-based speed and acceleration limits, stays within profile travel, and follows absolute pan/tilt without modulo-360 shortcuts. Reads do not advance movement, and Stop parks the controlled pose. Saved shows retain motion settings; older shows use defaults. See MOVEMENT.md for timing, hard-limit behavior and hardware limitations.
 
 ## Then: movement library
 

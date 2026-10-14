@@ -1,6 +1,6 @@
 # Validation record
 
-Date: 14 October 2026. Current status: Apple Silicon executable built, 70 tests passed and native interface checked; real audio capture and hardware output untested. The initial table below records the earlier local compiler blocker.
+Date: 14 October 2026. Current status: Apple Silicon executable built, 75 tests passed and native interface checked; real audio capture and hardware output untested. The initial table below records the earlier local compiler blocker.
 
 | Check | Result |
 |---|---|
@@ -105,3 +105,14 @@ The final downloaded Apple Silicon app was packaged as LumenDesk Director, ad-ho
 Actual microphone/system-audio capture, musical recognition accuracy, physical fixture output and mechanical response remain unverified. The director is an energy-based heuristic, not a trained song recognizer or drop predictor. NEXT-STEPS.md records the shared-chat priorities and distinguishes proposals from shipped features. Movement changes during effect enable/disable, Sync and Autopilot section changes still require a final position/velocity controller; these are not claimed fixed by this tempo increment.
 
 Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38526559436
+
+
+## Smooth final motion — 2026-10-14
+
+Build 38529027105 compiled 0f87b361bc2700382ec7d1068ace93076ab6f0bb successfully and passed all 75 XCTest tests. Five new tests cover absolute travel, speed/acceleration bounds, settling, reversals, missed-frame capping, invalid input, effect/Sync/Autopilot target changes, preview/output equality, pure rendering reads, Blackout, Stop parking, fixture removal, interrupted instant cues and saved/legacy settings. The earlier fade-byte test explicitly disables smoothing to keep its exact interpolation/encoding assertions independent of motion dynamics; motion integration and output parity are verified separately.
+
+The downloaded arm64 app was packaged as LumenDesk Motion with a distinct executable and bundle identifier, locally ad-hoc signed and verified with strict deep signature verification. The five-fixture rig opened. Design → Position displayed speed 90, acceleration 180 and current pan/tilt. Speed was temporarily set to 1 degree/second. Increasing the pan slider requested 54 degrees while the controlled-position readout showed 1.2 degrees, confirming gradual travel. Stop later parked at 25.3 degrees. A subsequent observation after restoring speed 90 showed the same parked position; acceleration remained 180. Audio and Art-Net output stayed off.
+
+These checks verify software motion and native controls, not real motors. Physical travel and 8-bit DMX quantization remain hardware test items. Changing inversion while output is live can flip commands; calibration should be performed with output off. This delivery adds motion stability, not a new movement library or trained song recognition. See MOVEMENT.md.
+
+Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38529027105
