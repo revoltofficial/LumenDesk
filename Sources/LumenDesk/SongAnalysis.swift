@@ -44,8 +44,8 @@ enum SongAnalyzer {
         var previous = sections.first?.1 ?? 0
         var lastTime = 0.0
         for section in sections.dropFirst() {
-            let rise = section.1 > max(previous*1.6,maximum*0.6)
-            let fall = section.1 < previous*0.55 && section.1 < maximum*0.4
+            let rise = section.1 > max(previous*1.2,maximum*0.6)
+            let fall = section.1 < previous*0.85 && section.1 < maximum*0.8
             if (rise || fall), section.0-lastTime >= 2, markers.count < 128 {
                 // Keep strong energy changes near their measured location;
                 // phrase boundaries fill quiet gaps without inventing drops.

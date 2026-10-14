@@ -36,4 +36,12 @@ final class SongAnalysisTests: XCTestCase {
         XCTAssertFalse(store.outputEnabled); XCTAssertFalse(store.timelinePlaying)
         try store.project.validate()
     }
+    func testDecodedRehearsalSuggestsBothSections() throws {
+        let url = try SongAudioReader.demo()
+        defer { try? FileManager.default.removeItem(at:url) }
+        let result = try SongAudioReader.read(url).analysis
+        XCTAssertEqual(result.bpm ?? 0,120,accuracy:3)
+        XCTAssertTrue(result.markers.contains { $0.name == "Break?" && abs($0.time-10)<1 })
+        XCTAssertTrue(result.markers.contains { $0.name == "Drop?" && abs($0.time-20)<1 })
+    }
 }
