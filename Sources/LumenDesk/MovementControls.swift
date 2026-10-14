@@ -32,6 +32,7 @@ struct MovementControls: View {
                     VStack(alignment: .leading, spacing: 10) {
                         axis("Pan", key: \.pan, range: profile.panDegrees)
                         axis("Tilt", key: \.tilt, range: profile.tiltDegrees)
+                        Text("Current pan \((store.renderedState(for: fixture.id).pan - 0.5) * profile.panDegrees, specifier: "%.1f")° · tilt \((store.renderedState(for: fixture.id).tilt - 0.5) * profile.tiltDegrees, specifier: "%.1f")°").font(.caption2).monospacedDigit()
                         motionSettings
                         HStack {
                             Button("Center") { store.setSelectionPosition(pan: 0.5, tilt: 0.5) }
