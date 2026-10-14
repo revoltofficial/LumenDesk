@@ -395,7 +395,7 @@ import UniformTypeIdentifiers
         }
         sequencePlayer = player
     }
-    private func cancelSequence() {
+    func cancelSequence() {
         if let pausedAt = sequencePausedAt, let start = fadeStart { fadeStart = start + clock() - pausedAt }
         sequencePlayer = nil
         sequenceCues = [:]

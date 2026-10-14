@@ -62,22 +62,14 @@ struct ShowCreatorView: View {
                     context.stroke(playhead,with:.color(.white),lineWidth:2)
                 }
                 ForEach(timeline.events) { event in
-                    let name = store.project.cues.first(where:{$0.id == event.cueID})?.name ?? "Missing cue"
-                    Text(name).font(.system(size:9)).lineLimit(1).padding(4).frame(width:90)
-                        .background(store.selectedSongEvent == event.id ? Color.mint : Color.blue.opacity(0.7),in:RoundedRectangle(cornerRadius:4))
-                        .foregroundStyle(store.selectedSongEvent == event.id ? .black : .white)
-                        .position(x:min(geo.size.width-45,max(45,event.time/timeline.duration*geo.size.width)),y:91)
-                        .onTapGesture { store.selectedSongEvent = event.id; store.seekSong(event.time) }
-                        .gesture(DragGesture(coordinateSpace:.named("songWave")).onChanged { value in
-                            store.selectedSongEvent = event.id; store.moveSongCue(event.id,time:Double(value.location.x/geo.size.width)*timeline.duration)
-                        }).accessibilityLabel("Timeline cue \(name) at \(time(event.time))")
+                    SongTimelineBlock(event:event,width:Double(geo.size.width),duration:timeline.duration)
                 }
                 if timeline.waveform.isEmpty { Text("Import audio or try rehearsal to show its waveform").font(.caption).foregroundStyle(.secondary).position(x:geo.size.width/2,y:45) }
             }.coordinateSpace(name:"songWave").background(.white.opacity(0.04),in:RoundedRectangle(cornerRadius:6))
         }.accessibilityLabel("Song waveform and cue timeline")
     }
     private var eventEditor: some View {
-        VStack(alignment:.leading,spacing:5) {
+        LazyVStack(alignment:.leading,spacing:5) {
             Text("Cue events").font(.caption).foregroundStyle(.secondary)
             ForEach(timeline.events.sorted(by:{$0.time < $1.time})) { event in
                 HStack {
@@ -92,7 +84,7 @@ struct ShowCreatorView: View {
         }
     }
     private var markerEditor: some View {
-        VStack(alignment:.leading,spacing:5) {
+        LazyVStack(alignment:.leading,spacing:5) {
             if !timeline.markers.isEmpty { Text("Section markers").font(.caption).foregroundStyle(.secondary) }
             ForEach(timeline.markers.sorted(by:{$0.time < $1.time})) { marker in
                 HStack {
@@ -109,5 +101,35 @@ struct ShowCreatorView: View {
                 }
             }
         }
+    }
+}
+
+private struct SongTimelineBlock: View {
+    @EnvironmentObject var store: LightingStore
+    let event: SongCueEvent
+    let width: Double
+    let duration: Double
+    @State private var dragOrigin: Double?
+    private var name: String { store.project.cues.first(where: { $0.id == event.cueID })?.name ?? "Missing cue" }
+    private var selected: Bool { store.selectedSongEvent == event.id }
+    private var x: CGFloat { CGFloat(min(width-45,max(45,event.time/duration*width))) }
+    private var background: Color { selected ? Color.mint : Color.blue.opacity(0.7) }
+    private var foreground: Color { selected ? Color.black : Color.white }
+    var body: some View {
+        Text(name).font(.system(size:9)).lineLimit(1).padding(4).frame(width:90)
+            .background(background,in:RoundedRectangle(cornerRadius:4))
+            .foregroundStyle(foreground).position(x:x,y:91)
+            .onTapGesture { store.selectedSongEvent = event.id; store.seekSong(event.time) }
+            .gesture(drag)
+            .accessibilityLabel("Timeline cue \(name) at \(event.time.formatted()) seconds")
+    }
+    private var drag: some Gesture {
+        DragGesture(coordinateSpace:.named("songWave"))
+            .onChanged { value in
+                guard width > 0 else { return }
+                if dragOrigin == nil { dragOrigin = event.time }
+                store.selectedSongEvent = event.id
+                store.moveSongCue(event.id,time:(dragOrigin ?? event.time)+Double(value.translation.width)/width*duration)
+            }.onEnded { _ in dragOrigin = nil }
     }
 }
