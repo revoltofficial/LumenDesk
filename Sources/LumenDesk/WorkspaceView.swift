@@ -28,9 +28,11 @@ struct WorkspaceView: View {
                     modeBar
                     Divider()
                     if mode == "Design" {
-                        if designTab == "Position" { MovementControls().frame(height: 230) }
-                        else if designTab == "Beam" { MovementControls(beam: true).frame(height: 230) }
-                        else { designControls.frame(height: 230) }
+                        ScrollView {
+                            if designTab == "Position" { MovementControls() }
+                            else if designTab == "Beam" { MovementControls(beam: true) }
+                            else { designControls }
+                        }.frame(height: 260).clipped()
                     }
                     else if mode == "Presets" { PresetWorkspace().frame(height: 230) }
                     else { liveControls.frame(height: 300) }
