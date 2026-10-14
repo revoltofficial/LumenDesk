@@ -56,24 +56,10 @@ struct ShowCreatorView: View {
     private var waveform: some View {
         GeometryReader { geo in
             ZStack(alignment:.topLeading) {
-                Canvas { context,size in
-                    let peaks = timeline.waveform
-                    var envelope = Path()
-                    for (index,peak) in peaks.enumerated() {
-                        let x = Double(index)/Double(max(1,peaks.count-1))*size.width
-                        envelope.move(to:CGPoint(x:x,y:50-peak*30)); envelope.addLine(to:CGPoint(x:x,y:50+peak*30))
-                    }
-                    context.stroke(envelope,with:.color(.mint.opacity(0.55)),lineWidth:1)
-                    for marker in timeline.markers {
-                        let x = marker.time/timeline.duration*size.width
-                        var line = Path(); line.move(to:CGPoint(x:x,y:0)); line.addLine(to:CGPoint(x:x,y:size.height))
-                        context.stroke(line,with:.color(.orange.opacity(0.3)),lineWidth:1)
-                        context.draw(Text(marker.name).font(.system(size:9)).foregroundColor(.orange),at:CGPoint(x:min(size.width-30,max(30,x)),y:9))
-                    }
-                    let x = store.timelinePosition/timeline.duration*size.width
-                    var playhead = Path(); playhead.move(to:CGPoint(x:x,y:0)); playhead.addLine(to:CGPoint(x:x,y:size.height))
-                    context.stroke(playhead,with:.color(.white),lineWidth:2)
-                }
+                SongWaveformBackground(peaks:timeline.waveform,markers:timeline.markers,duration:timeline.duration).equatable()
+                Rectangle().fill(.white).frame(width:2,height:105)
+                    .offset(x:store.timelinePosition/timeline.duration*geo.size.width)
+                    .allowsHitTesting(false)
                 ForEach(timeline.events) { event in
                     SongTimelineBlock(event:event,width:Double(geo.size.width),duration:timeline.duration)
                 }
@@ -197,6 +183,28 @@ private struct SongGenerationControls: View {
                 var timeline = store.songTimeline; timeline.beatOffset = value; store.project.songTimeline = timeline
             }),format:.number.precision(.fractionLength(2))).frame(width:60).accessibilityLabel("Song beat offset")
             Text("Style and flashing apply on generation").font(.caption2).foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct SongWaveformBackground: View, Equatable {
+    let peaks: [Double]
+    let markers: [SongMarker]
+    let duration: Double
+    var body: some View {
+        Canvas { context,size in
+            var envelope = Path()
+            for (index,peak) in peaks.enumerated() {
+                let x = Double(index)/Double(max(1,peaks.count-1))*size.width
+                envelope.move(to:CGPoint(x:x,y:50-peak*30)); envelope.addLine(to:CGPoint(x:x,y:50+peak*30))
+            }
+            context.stroke(envelope,with:.color(.mint.opacity(0.55)),lineWidth:1)
+            for marker in markers {
+                let x = marker.time/duration*size.width
+                var line = Path(); line.move(to:CGPoint(x:x,y:0)); line.addLine(to:CGPoint(x:x,y:size.height))
+                context.stroke(line,with:.color(.orange.opacity(0.3)),lineWidth:1)
+                context.draw(Text(marker.name).font(.system(size:9)).foregroundColor(.orange),at:CGPoint(x:min(size.width-30,max(30,x)),y:9))
+            }
         }
     }
 }

@@ -3,6 +3,11 @@ import AVFoundation
 import UniformTypeIdentifiers
 
 extension LightingStore {
+    var preparedSong: PreparedSongTimeline {
+        if let cached = preparedSongCache { return cached }
+        let value = PreparedSongTimeline(timeline:songTimeline,cues:project.cues,fixtureIDs:project.fixtures.filter{!$0.resolvedProfile.isLaser}.map(\.id))
+        preparedSongCache = value; return value
+    }
     var songTimeline: SongTimeline { project.songTimeline ?? SongTimeline() }
     func prepareTimelineControl() {
         cancelSequence(); releaseAllLayers(); stopListening(); fadeStart = nil
@@ -82,10 +87,10 @@ extension LightingStore {
                 timelinePlaying = false; timelineFreezeMotion = true
             }
         }
-        let fixtures = project.fixtures.filter { !$0.resolvedProfile.isLaser }
-        let values = SongTimelineRenderer.levels(timeline:songTimeline,cues:project.cues,fixtureIDs:fixtures.map(\.id),position:timelinePosition)
+        let values = preparedSong.levels(at:timelinePosition)
         for (id,value) in values { fixtureStates[id] = value }
-        activeCueID = songTimeline.events.filter { $0.time <= timelinePosition }.max(by: { $0.time < $1.time })?.cueID
+        let cueID = preparedSong.index(at:timelinePosition).map { preparedSong.segments[$0].event.cueID }
+        if activeCueID != cueID { activeCueID = cueID }
         tempoClock.seek(beats:max(0,(timelinePosition-(songTimeline.beatOffset ?? 0))*bpm/60)); phase = timelinePosition
     }
     func addSongCue(_ cueID: UUID) {

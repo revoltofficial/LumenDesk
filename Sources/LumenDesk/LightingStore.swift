@@ -4,7 +4,10 @@ import Combine
 import UniformTypeIdentifiers
 
 @MainActor final class LightingStore: ObservableObject {
-    @Published var project = ShowProject.demo
+    @Published var project = ShowProject.demo { didSet { preparedSongCache = nil } }
+    var preparedSongCache: PreparedSongTimeline?
+    var batchingSongTick = false
+    private func songValueChanged() { if !batchingSongTick { objectWillChange.send() } }
     @Published var selectedFixtureIDs: Set<UUID> = []
     var selectedFixtureID: UUID? {
         get { project.fixtures.first(where: { selectedFixtureIDs.contains($0.id) })?.id }
@@ -82,9 +85,9 @@ import UniformTypeIdentifiers
     @Published var activeCueID: UUID?
     @Published var outputEnabled = false
     @Published var errorMessage: String?
-    @Published var phase: Double = 0
-    @Published var tempoClock = TempoClock()
-    @Published var fixtureStates: [UUID: FixtureState] = [:]
+    var phase: Double = 0 { didSet { songValueChanged() } }
+    var tempoClock = TempoClock() { didSet { songValueChanged() } }
+    var fixtureStates: [UUID: FixtureState] = [:] { didSet { songValueChanged() } }
     @Published private(set) var sequencePlayer: SequencePlayer?
     private var sequenceCues: [UUID: Cue] = [:]
     private var sequencePausedAt: TimeInterval?
@@ -127,7 +130,7 @@ import UniformTypeIdentifiers
     private var connectedDestination = ""
     private var lastOutputUniverse = 1
     var motionPoses: [UUID: MotionPose] = [:]
-    @Published var timelinePosition = 0.0
+    var timelinePosition = 0.0 { didSet { songValueChanged() } }
     @Published var timelinePlaying = false
     @Published var importingSong = false
     @Published var selectedSongEvent: UUID?
@@ -412,6 +415,8 @@ import UniformTypeIdentifiers
     func tempoNow() -> TimeInterval { clock() }
     func resetTempoTick() { lastTick = clock() }
     func tick() {
+        if timelineControlsLighting { objectWillChange.send(); batchingSongTick = true }
+        defer { batchingSongTick = false }
         let now = clock()
         let elapsed = max(0, now - lastTick)
         // Seed new heads before a cue fade changes their base position.
@@ -513,13 +518,14 @@ import UniformTypeIdentifiers
         }
         if timelineControlsLighting,
            let fixture = project.fixtures.first(where: { $0.id == id }), !fixture.resolvedProfile.isLaser,
-           let event = songTimeline.events.filter({ $0.time <= timelinePosition }).max(by:{ $0.time < $1.time }),
+           let segmentIndex = preparedSong.index(at:timelinePosition),
+           let event = Optional(preparedSong.segments[segmentIndex].event),
            let dance = event.choreography {
             let peers = project.fixtures.filter { !$0.resolvedProfile.isLaser }
             result = SongChoreographer.render(base:result,choreography:dance,seconds:timelinePosition-event.time,
                 bpm:bpm,index:peers.firstIndex(where:{$0.id == id}) ?? 0,count:peers.count,moving:fixture.resolvedProfile.movingHead,
                 beatPosition:max(0,(timelinePosition-(songTimeline.beatOffset ?? 0))*bpm/60),
-                sectionDuration:(songTimeline.events.filter{$0.time > event.time}.map(\.time).min() ?? songTimeline.duration)-event.time)
+                sectionDuration:(segmentIndex+1 < preparedSong.segments.count ? preparedSong.segments[segmentIndex+1].event.time : songTimeline.duration)-event.time)
         }
         if autopilotEnabled, let fixture = project.fixtures.first(where: { $0.id == id }), fixture.autopilotRole != .manual, !fixture.resolvedProfile.isLaser {
             let role = fixture.autopilotRole ?? (fixture.resolvedProfile.movingHead ? .beam : .wash)
