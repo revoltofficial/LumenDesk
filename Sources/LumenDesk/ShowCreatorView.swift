@@ -33,6 +33,7 @@ struct ShowCreatorView: View {
                         Button("Generate show…") { confirmGeneration = true }
                     }
                 }
+                SongGenerationControls()
                 waveform.frame(height:105)
                 HStack {
                     Picker("Cue",selection:Binding(get:{cueID ?? store.project.cues.first?.id},set:{cueID = $0})) {
@@ -164,6 +165,11 @@ private struct SongDanceEditor: View {
                 ForEach(SongDanceStyle.allCases) { style in Text(style.title).tag(Optional(style)) }
             }.frame(width:130)
             if let dance {
+                if dance.style == .buildup {
+                    Toggle("Flash",isOn:Binding(get:{self.dance?.flashes ?? false},set:{enabled in
+                        var value = self.dance ?? dance; value.flashes = enabled; set(value)
+                    }))
+                }
                 Slider(value:Binding(get:{self.dance?.strength ?? dance.strength},set:{strength in
                     var value = self.dance ?? dance; value.strength = strength; set(value)
                 }),in:0...1).frame(width:65).accessibilityLabel("Choreography strength")
@@ -171,6 +177,26 @@ private struct SongDanceEditor: View {
                     var value = self.dance ?? dance; value.beatsPerCycle = beats; set(value)
                 })) { ForEach([2.0,4,8,16,32],id:\.self) { beats in Text("\(Int(beats)) beats").tag(beats) } }.frame(width:120)
             }
+        }
+    }
+}
+
+private struct SongGenerationControls: View {
+    @EnvironmentObject var store: LightingStore
+    var body: some View {
+        HStack {
+            Picker("Show style",selection:Binding(get:{store.songTimeline.showStyle ?? .disco},set:{value in
+                var timeline = store.songTimeline; timeline.showStyle = value; store.project.songTimeline = timeline
+            })) { ForEach(SongShowStyle.allCases) { Text($0.title).tag($0) } }.frame(width:180)
+            Toggle("Pre-drop flashes",isOn:Binding(get:{store.songTimeline.buildFlashes ?? false},set:{value in
+                var timeline = store.songTimeline; timeline.buildFlashes = value; store.project.songTimeline = timeline
+            })).help("Adds brief dimmer flashing in generated build-up cues. Off by default; capped at 6 flashes per second.")
+            Text("Beat offset (s)").font(.caption)
+            TextField("Offset",value:Binding(get:{store.songTimeline.beatOffset ?? 0},set:{value in
+                guard value.isFinite,(0...10).contains(value) else { return }
+                var timeline = store.songTimeline; timeline.beatOffset = value; store.project.songTimeline = timeline
+            }),format:.number.precision(.fractionLength(2))).frame(width:60).accessibilityLabel("Song beat offset")
+            Text("Style and flashing apply on generation").font(.caption2).foregroundStyle(.secondary)
         }
     }
 }

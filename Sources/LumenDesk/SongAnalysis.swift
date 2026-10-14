@@ -4,6 +4,7 @@ struct SongAnalysis: Sendable {
     var bpm: Double?
     var confidence: Double
     var markers: [SongMarker]
+    var beatOffset: Double = 0
 }
 enum SongAnalyzer {
     // Positive energy changes supply an onset envelope. Tempo is a suggestion,
@@ -31,6 +32,13 @@ enum SongAnalyzer {
             }
         }
         let bpm: Double? = best >= 0.25 ? tempo : nil
+        var beatOffset = 0.0
+        if let bpm {
+            let period = max(1,Int((rate*60/bpm).rounded()))
+            var phases = [Double](repeating:0,count:period)
+            for i in onsets.indices { phases[i%period] += onsets[i] }
+            if let peak = phases.indices.max(by:{phases[$0] < phases[$1]}) { beatOffset = Double(peak)/rate }
+        }
         let phrase = bpm.map { 32*60/$0 } ?? 8
         let window = max(1,Int(rate*2))
         var sections: [(Double,Double)] = []
@@ -56,6 +64,6 @@ enum SongAnalyzer {
             }
             previous = section.1
         }
-        return SongAnalysis(bpm:bpm,confidence:min(1,max(0,best)),markers:markers)
+        return SongAnalysis(bpm:bpm,confidence:min(1,max(0,best)),markers:markers,beatOffset:beatOffset)
     }
 }

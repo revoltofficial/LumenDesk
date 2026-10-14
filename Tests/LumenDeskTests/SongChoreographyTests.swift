@@ -40,4 +40,24 @@ final class SongChoreographyTests: XCTestCase {
         let held = store.targetState(for:head); store.tick(); XCTAssertEqual(store.targetState(for:head),held)
         store.stop(); XCTAssertEqual(store.renderedState(for:head).dimmer,0)
     }
+    func testBuildRampAndOptionalFlashesAreBounded() {
+        let base = FixtureState()
+        var dance = SongChoreography(style:.buildup,strength:1,beatsPerCycle:4)
+        let early = SongChoreographer.render(base:base,choreography:dance,seconds:1,bpm:120,index:0,count:4,moving:true,sectionDuration:8)
+        let late = SongChoreographer.render(base:base,choreography:dance,seconds:7.2,bpm:120,index:0,count:4,moving:true,sectionDuration:8)
+        XCTAssertGreaterThan(late.dimmer,early.dimmer)
+        dance.flashes = true
+        let flash = SongChoreographer.render(base:base,choreography:dance,seconds:7.2,bpm:120,index:0,count:4,moving:true,sectionDuration:8)
+        XCTAssertLessThan(flash.dimmer,late.dimmer)
+        XCTAssertTrue((0...1).contains(flash.dimmer))
+    }
+    func testAbsoluteBeatPhaseAndPaletteSelection() {
+        let base = FixtureState(); var dance = SongChoreography(style:.flow)
+        dance.showStyle = .techno
+        let a = SongChoreographer.render(base:base,choreography:dance,seconds:4,bpm:120,index:0,count:4,moving:true,beatPosition:8)
+        let b = SongChoreographer.render(base:base,choreography:dance,seconds:6,bpm:120,index:0,count:4,moving:true,beatPosition:8)
+        XCTAssertEqual(a,b)
+        dance.showStyle = .disco
+        XCTAssertNotEqual(a,SongChoreographer.render(base:base,choreography:dance,seconds:4,bpm:120,index:0,count:4,moving:true,beatPosition:8))
+    }
 }

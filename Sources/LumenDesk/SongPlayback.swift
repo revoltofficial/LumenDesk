@@ -86,7 +86,7 @@ extension LightingStore {
         let values = SongTimelineRenderer.levels(timeline:songTimeline,cues:project.cues,fixtureIDs:fixtures.map(\.id),position:timelinePosition)
         for (id,value) in values { fixtureStates[id] = value }
         activeCueID = songTimeline.events.filter { $0.time <= timelinePosition }.max(by: { $0.time < $1.time })?.cueID
-        tempoClock.seek(beats:timelinePosition*bpm/60); phase = timelinePosition
+        tempoClock.seek(beats:max(0,(timelinePosition-(songTimeline.beatOffset ?? 0))*bpm/60)); phase = timelinePosition
     }
     func addSongCue(_ cueID: UUID) {
         guard project.cues.contains(where: { $0.id == cueID }) else { return }
@@ -115,29 +115,41 @@ extension LightingStore {
         guard let analysis = songAnalysis else { return }
         exitTimeline()
         var timeline = songTimeline
-        timeline.markers = analysis.markers
+        timeline.beatOffset = analysis.beatOffset
+        var markers = analysis.markers
+        if generate {
+            let buildLength = 8*60/(analysis.bpm ?? bpm)
+            for drop in analysis.markers where drop.name == "Drop?" && drop.time > buildLength {
+                let start = drop.time-buildLength
+                if !markers.contains(where:{abs($0.time-start)<0.1}) { markers.append(SongMarker(time:start,name:"Build?")) }
+            }
+            markers.sort {$0.time < $1.time}
+        }
+        timeline.markers = markers
         if let tempo = analysis.bpm { setManualBPM(tempo) }
         if generate {
             let fixtures = project.fixtures.filter { !$0.resolvedProfile.isLaser }
             guard !fixtures.isEmpty else { errorMessage = "Patch a non-laser fixture before generating a show."; return }
             var events: [SongCueEvent] = []
             var cues: [Cue] = []
-            for (index,marker) in analysis.markers.enumerated() {
+            for (index,marker) in markers.enumerated() {
                 let quiet = marker.name == "Break?" || marker.name == "Intro"
                 let strong = marker.name == "Drop?"
-                let palette: [(Double,Double,Double)] = quiet ? [(0.15,0.05,0.7),(0.05,0.2,0.8)] : [(0.8,0.05,0.5),(0.05,0.7,1),(0.7,0.2,0.05)]
+                let building = marker.name == "Build?"
+                let style = timeline.showStyle ?? .disco
+                let palette = style.palette
                 var levels: [UUID:FixtureState] = [:]
                 for (offset,fixture) in fixtures.enumerated() {
                     let color = palette[(index+offset)%palette.count]
                     var state = fixtureStates[fixture.id] ?? FixtureState()
-                    state.dimmer = quiet ? 0.3 : (strong ? 1 : 0.7)
+                    state.dimmer = quiet ? 0.3 : (style == .ambient ? 0.55 : (strong ? 1 : 0.7))
                     state.red = color.0; state.green = color.1; state.blue = color.2; state.white = 0
                     state.pan = quiet ? 0.5 : (offset%2 == 0 ? 0.35 : 0.65)
                     state.tilt = quiet ? 0.55 : 0.7
                     levels[fixture.id] = state
                 }
                 let cue = Cue(name:"Song · \(marker.name) \(index+1)",fadeSeconds:quiet ? 2 : 0.5,levels:levels)
-                cues.append(cue); events.append(SongCueEvent(time:marker.time,cueID:cue.id,choreography:SongChoreography(style:quiet ? .gentle : (strong ? .energetic : .flow),strength:0.7,beatsPerCycle:quiet ? 16 : (strong ? 4 : 8))))
+                cues.append(cue); events.append(SongCueEvent(time:marker.time,cueID:cue.id,choreography:SongChoreography(style:building ? .buildup : (quiet || style == .ambient ? .gentle : (strong ? .energetic : .flow)),strength:style == .ambient ? 0.4 : 0.7,beatsPerCycle:quiet || style == .ambient ? 16 : (strong ? 4 : 8),showStyle:style,flashes:building && timeline.buildFlashes == true)))
             }
             var proposed = project
             proposed.cues.append(contentsOf:cues); timeline.events = events; proposed.songTimeline = timeline

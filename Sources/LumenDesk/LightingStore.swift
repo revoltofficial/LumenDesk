@@ -517,7 +517,9 @@ import UniformTypeIdentifiers
            let dance = event.choreography {
             let peers = project.fixtures.filter { !$0.resolvedProfile.isLaser }
             result = SongChoreographer.render(base:result,choreography:dance,seconds:timelinePosition-event.time,
-                bpm:bpm,index:peers.firstIndex(where:{$0.id == id}) ?? 0,count:peers.count,moving:fixture.resolvedProfile.movingHead)
+                bpm:bpm,index:peers.firstIndex(where:{$0.id == id}) ?? 0,count:peers.count,moving:fixture.resolvedProfile.movingHead,
+                beatPosition:max(0,(timelinePosition-(songTimeline.beatOffset ?? 0))*bpm/60),
+                sectionDuration:(songTimeline.events.filter{$0.time > event.time}.map(\.time).min() ?? songTimeline.duration)-event.time)
         }
         if autopilotEnabled, let fixture = project.fixtures.first(where: { $0.id == id }), fixture.autopilotRole != .manual, !fixture.resolvedProfile.isLaser {
             let role = fixture.autopilotRole ?? (fixture.resolvedProfile.movingHead ? .beam : .wash)
