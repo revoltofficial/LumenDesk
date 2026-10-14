@@ -113,8 +113,14 @@ struct Effect: Identifiable, Codable {
     var pathPoints: [MotionPoint]? = nil
     var pathClosed: Bool? = nil
     var colors: [EffectColor]? = nil
+    var reverse: Bool? = nil
+    var motionPhase: Double? = nil
+    var panSize: Double? = nil
+    var tiltSize: Double? = nil
+    var arrangement: MotionArrangement? = nil
     var validTiming: Bool {
-        cycleBeats.isFinite && [0.25, 0.5, 1, 2, 4, 8, 16].contains(cycleBeats)
+        cycleBeats.isFinite && [0.25, 0.5, 1, 2, 4, 8, 16, 32, 64].contains(cycleBeats)
+        && [motionPhase ?? 0, panSize ?? 1, tiltSize ?? 1].allSatisfy { $0.isFinite && (0...1).contains($0) }
         && (spread ?? 1).isFinite && (0...1).contains(spread ?? 1)
         && (pathPoints == nil || ((2...32).contains(pathPoints!.count) && pathPoints!.allSatisfy { $0.valid }))
         && (colors == nil || ((1...16).contains(colors!.count) && colors!.allSatisfy { $0.valid }))
@@ -137,6 +143,8 @@ struct ShowProject: Codable {
     var tempo: TempoSettings? = nil
     var autopilot: AutopilotPreferences? = nil
     var motion: MotionSettings? = nil
+    var movementPresets: [MovementPreset]? = nil
+    var movementFavorites: [MovementPattern]? = nil
     static var demo: Self {
         var project = Self()
         project.fixtures = (0..<6).map { Fixture(name: "Wash \($0 + 1)", kind: .rgb, address: $0 * 3 + 1, x: 0.12 + Double($0) * 0.15, y: 0.5) }
@@ -155,6 +163,10 @@ struct ShowProject: Codable {
         guard Set(profiles.map(\.id)).count == profiles.count, Set(profiles.map(\.id)).isDisjoint(with: Set(FixtureProfile.library.map(\.id))) else { try fail("Duplicate or reserved profile identifiers."); return }
         for profile in profiles { try profile.validate() }
         try liveBoard?.validate()
+        let movements = movementPresets ?? []
+        guard movements.count <= 64, Set(movements.map(\.id)).count == movements.count, movements.allSatisfy({ $0.valid }) else { try fail("Invalid saved movement preset."); return }
+        let favorites = movementFavorites ?? []
+        guard Set(favorites).count == favorites.count else { try fail("Duplicate movement favorites."); return }
         guard (autopilot ?? AutopilotPreferences()).valid else { try fail("Invalid Autopilot intensity."); return }
         guard (motion ?? MotionSettings()).valid else { try fail("Movement speed or acceleration is invalid."); return }
         guard (tempo ?? TempoSettings()).valid else { try fail("BPM must be between 30 and 300."); return }

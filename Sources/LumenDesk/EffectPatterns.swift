@@ -8,8 +8,8 @@ enum Waveform: String, Codable, CaseIterable { case sine, triangle, square, ramp
         switch self { case .sine: return (sin(x * 2 * .pi) + 1) / 2; case .triangle: return 1 - abs(2 * x - 1); case .square: return x < 0.5 ? 1 : 0; case .rampUp: return x; case .rampDown: return 1 - x }
     }
 }
-enum MovementPattern: String, Codable, CaseIterable { case circle, figureEight, sweep, custom
-    var title: String { self == .figureEight ? "Figure eight" : rawValue.capitalized }
+enum MovementPattern: String, Codable, CaseIterable { case circle, figureEight, sweep, verticalSweep, fan, wave, spiral, zigzag, cross, wander, atmosphere, custom
+    var title: String { switch self { case .figureEight: return "Figure eight"; case .verticalSweep: return "Vertical sweep"; case .wander: return "Smooth wander"; case .atmosphere: return "Slow atmosphere"; default: return rawValue.capitalized } }
 }
 struct MotionPoint: Codable, Equatable { var x: Double; var y: Double
     var valid: Bool { x.isFinite && y.isFinite && (-1...1).contains(x) && (-1...1).contains(y) }
@@ -17,11 +17,22 @@ struct MotionPoint: Codable, Equatable { var x: Double; var y: Double
 enum MotionPath {
     static let defaults = [MotionPoint(x: -0.8, y: 0), MotionPoint(x: 0, y: 0.8), MotionPoint(x: 0.8, y: 0), MotionPoint(x: 0, y: -0.8)]
     static func sample(effect: Effect, phase: Double) -> MotionPoint {
-        let p = phase - floor(phase), angle = p * 2 * Double.pi
+        let adjusted = (effect.reverse == true ? -phase : phase) + (effect.motionPhase ?? 0)
+        let p = adjusted - floor(adjusted), angle = p * 2 * Double.pi
         switch effect.movement ?? .circle {
         case .circle: return MotionPoint(x: sin(angle), y: cos(angle))
         case .figureEight: return MotionPoint(x: sin(angle), y: sin(angle * 2))
         case .sweep: return MotionPoint(x: 2 * Waveform.triangle.value(at: p) - 1, y: 0)
+        case .verticalSweep: return MotionPoint(x: 0, y: sin(angle))
+        case .fan: return MotionPoint(x: 0.65 + 0.35 * sin(angle), y: 0.4 * cos(angle))
+        case .wave: return MotionPoint(x: sin(angle), y: 0.35 * sin(3 * angle))
+        case .spiral:
+            let radius = 0.55 + 0.45 * cos(angle)
+            return MotionPoint(x: radius * sin(3 * angle), y: radius * cos(3 * angle))
+        case .zigzag: return MotionPoint(x: 2 * Waveform.triangle.value(at: p) - 1, y: 0.65 * sin(3 * angle))
+        case .cross: return MotionPoint(x: sin(angle), y: sin(angle))
+        case .wander: return MotionPoint(x: (sin(angle) + 0.5 * sin(3 * angle + 0.7)) / 1.5, y: (cos(2 * angle + 0.4) + 0.5 * sin(5 * angle)) / 1.5)
+        case .atmosphere: return MotionPoint(x: 0.5 * sin(angle), y: 0.25 * sin(2 * angle))
         case .custom:
             let points = effect.pathPoints ?? defaults
             guard points.count >= 2 else { return MotionPoint(x: 0, y: 0) }
@@ -46,13 +57,14 @@ struct EffectColor: Codable { var red: Double; var green: Double; var blue: Doub
 struct EffectEditor: View {
     @Binding var effect: Effect
     @State private var editingPath = false
+    @State private var browsingMovements = false
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Toggle(effect.name, isOn: $effect.enabled).frame(width: 155, alignment: .leading)
                 Picker("Timing", selection: Binding(get: { effect.beatTiming ?? false }, set: { effect.beatTiming = $0 })) { Text("Seconds").tag(false); Text("Beats").tag(true) }.pickerStyle(.segmented).frame(width: 150)
                 if effect.beatTiming == true {
-                    Picker("Cycle", selection: Binding(get: { effect.cycleBeats }, set: { effect.beatsPerCycle = $0 })) { ForEach([0.25,0.5,1,2,4,8,16], id: \.self) { Text("\($0.formatted()) beats").tag($0) } }.frame(width: 155)
+                    Picker("Cycle", selection: Binding(get: { effect.cycleBeats }, set: { effect.beatsPerCycle = $0 })) { ForEach([0.25,0.5,1,2,4,8,16,32,64], id: \.self) { Text("\($0.formatted()) beats").tag($0) } }.frame(width: 155)
                 } else {
                     Text("\(1 / max(0.05,effect.rate), specifier: "%.2f") s / \(effect.kind == .chase ? "step" : "cycle")").font(.caption)
                     Slider(value: $effect.rate, in: 0.05...4).frame(width: 90)
@@ -67,6 +79,7 @@ struct EffectEditor: View {
                 }
                 if effect.kind == .circle {
                     Picker("Path", selection: Binding(get: { effect.movement ?? .circle }, set: { effect.movement = $0 })) { ForEach(MovementPattern.allCases, id: \.self) { Text($0.title).tag($0) } }.frame(width: 175)
+                    Button("Library…") { browsingMovements = true }
                     Button("Edit path…") { editingPath = true }
                 }
                 if effect.kind == .colorChase {
@@ -75,8 +88,10 @@ struct EffectEditor: View {
                 }
                 Spacer(minLength: 0)
             }
+            if effect.kind == .circle { MovementParameters(effect: $effect) }
         }.padding(10).background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 8))
             .sheet(isPresented: $editingPath) { MovementPathEditor(effect: $effect) }
+            .sheet(isPresented: $browsingMovements) { MovementLibraryView(effect: $effect) }
     }
 }
 struct MovementPathEditor: View {

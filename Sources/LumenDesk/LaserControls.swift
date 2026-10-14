@@ -27,6 +27,10 @@ struct LaserControls: View {
                 namedPicker("Scan pattern",1,[("Double scanning",127),("Vertical scanning",135),("Vertical double scanning",145),("Diagonal scanning",94),("Spinning scan",100),("Single scanning",116)])
                 namedPicker("Colour",7,[("Rainbow",0),("White",2),("Purple",4),("Light blue",6),("Green",8),("Blue",10),("Red",12)])
             }
+            HStack {
+                LaserPatternPreview(frame: LaserPreviewGeometry.sample(state: store.renderedState(for: fixtureID),seconds: store.phase,beats: store.tempoClock.beats)).frame(width: 180,height: 80)
+                Text("Schematic scan preview. Sound/Automatic timing is illustrative; the laser runs its own programs. Unknown pattern slots have no preview.").font(.caption).foregroundStyle(.secondary)
+            }
             LazyVGrid(columns: [GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible())],spacing: 12) {
                 ForEach(1..<9) { index in
                     VStack(alignment: .leading) {
@@ -35,7 +39,7 @@ struct LaserControls: View {
                     }
                 }
             }
-            Text("Cue capture stores these controls. Mode changes are discrete; patterns are not simulated in the stage preview.").font(.caption).foregroundStyle(.secondary)
+            Text("Cue capture stores these controls. Mode changes are discrete. Preview geometry is illustrative, not a calibrated laser projection.").font(.caption).foregroundStyle(.secondary)
         }.frame(maxWidth: 850)
     }
 }

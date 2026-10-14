@@ -26,6 +26,7 @@ struct MovementControls: View {
                 } else {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Pan / Tilt").font(.headline)
+                        MovementLibraryButton()
                         Text("Drag to position the selected heads").font(.caption).foregroundStyle(.secondary)
                         positionPad.frame(width: 210, height: 125)
                     }

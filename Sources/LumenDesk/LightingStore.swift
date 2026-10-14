@@ -439,9 +439,11 @@ import UniformTypeIdentifiers
             switch effect.kind {
             case .circle:
                 if project.fixtures.first(where: { $0.id == id })?.resolvedProfile.movingHead == true {
-                    let point = MotionPath.sample(effect: effect, phase: position)
-                    result.pan = min(1, max(0, result.pan + point.x * 0.18 * depth))
-                    result.tilt = min(1, max(0, result.tilt + point.y * 0.12 * depth))
+                    let heads = project.fixtures.filter { $0.resolvedProfile.movingHead }
+                    let headIndex = heads.firstIndex(where: { $0.id == id }) ?? 0
+                    let point = MotionPath.coordinated(effect: effect, cycles: cycles, index: headIndex, count: heads.count)
+                    result.pan = min(1, max(0, result.pan + point.x * 0.18 * depth * (effect.panSize ?? 1)))
+                    result.tilt = min(1, max(0, result.tilt + point.y * 0.12 * depth * (effect.tiltSize ?? 1)))
                 }
             case .sine: result.dimmer *= 1 - depth + depth * (effect.waveform ?? .sine).value(at: position)
             case .pulse: result.dimmer *= 1 - depth + depth * max(0, 1 - (position - floor(position)) * 5)

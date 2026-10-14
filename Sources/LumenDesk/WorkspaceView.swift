@@ -90,6 +90,7 @@ struct WorkspaceView: View {
                     Text("AUDIENCE").tracking(5)
                 }.font(.caption2).foregroundStyle(.secondary).padding(20).allowsHitTesting(false)
                 MovingHeadBeams()
+                LaserStageBeams()
                 ForEach(store.project.fixtures) { fixture in
                     let state = store.renderedState(for: fixture.id)
                     let white = fixture.resolvedProfile.supports(.white) ? state.white : 0
@@ -97,7 +98,7 @@ struct WorkspaceView: View {
                     let x = max(48, min(geo.size.width - 48, fixture.x * geo.size.width))
                     let y = max(58, min(geo.size.height - 68, fixture.y * geo.size.height))
                     ZStack {
-                        if !fixture.resolvedProfile.movingHead { Ellipse().fill(color.opacity(state.dimmer * 0.13)).frame(width: 95, height: 135).blur(radius: 12).offset(y: 50) }
+                        if !fixture.resolvedProfile.movingHead && !fixture.resolvedProfile.isLaser { Ellipse().fill(color.opacity(state.dimmer * 0.13)).frame(width: 95, height: 135).blur(radius: 12).offset(y: 50) }
                         VStack(spacing: 7) {
                             Group {
                                 if fixture.resolvedProfile.movingHead {
@@ -395,6 +396,7 @@ struct WorkspaceView: View {
     private var effectsPanel: some View {
         VStack(spacing: 10) {
             HStack {
+                MovementLibraryButton()
                 Menu("Add effect") {
                     ForEach(EffectKind.allCases) { kind in
                         Button(kind.title) { store.project.effects.append(Effect(name: kind.title, kind: kind)) }
