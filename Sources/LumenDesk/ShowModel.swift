@@ -140,6 +140,8 @@ struct ShowProject: Codable {
     // Display universe 1 maps to Art-Net port-address 0.
     var universe: Int = 1
     var destination: String = "127.0.0.1"
+    var outputTransport: OutputTransport? = nil
+    var usbDevice: String? = nil
     var sequenceSettings: SequenceSettings? = nil
     var fixtureGroups: [FixtureGroup]? = nil
     var presets: [LookPreset]? = nil

@@ -6,7 +6,8 @@ let package = Package(
     platforms: [.macOS(.v14)],
     products: [.executable(name: "LumenDesk", targets: ["LumenDesk"])],
     targets: [
-        .executableTarget(name: "LumenDesk"),
+        .target(name: "USBSerial"),
+        .executableTarget(name: "LumenDesk", dependencies: ["USBSerial"]),
         .testTarget(name: "LumenDeskTests", dependencies: ["LumenDesk"])
     ]
 )

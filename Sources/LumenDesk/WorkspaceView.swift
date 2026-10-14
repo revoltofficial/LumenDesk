@@ -482,13 +482,7 @@ struct WorkspaceView: View {
                 }
             }
             Divider()
-            Text("Art-Net output").font(.headline)
-            HStack {
-                Text("Destination")
-                TextField("192.168.1.100", text: $store.project.destination).textFieldStyle(.roundedBorder).frame(width: 180)
-                Stepper("Universe \(store.project.universe)", value: $store.project.universe, in: 1...32768)
-            }
-            Text("Use your node’s unicast address. Universe 1 maps to port-address 0. Output stays off until you start it.").font(.caption).foregroundStyle(.secondary)
+            OutputSettingsView()
             if let issue = patchIssue { Label(issue, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(.orange) }
         }.padding(24).frame(width: 920, height: 560).preferredColorScheme(.dark)
     }

@@ -114,6 +114,10 @@ import UniformTypeIdentifiers
     var lastTempoUpdate: TimeInterval = -.infinity
     var audioSession = UUID()
     private let output = ArtNetOutput()
+    private let usbOutput = OpenDMXOutput()
+    private var activeTransport = OutputTransport.artNet
+    private var activeUSBDevice = ""
+    @Published var usbDevices: [String] = []
     private var timer: Timer?
     private var lastTick = ProcessInfo.processInfo.systemUptime
     var fadeStart: TimeInterval?
@@ -148,6 +152,9 @@ import UniformTypeIdentifiers
                 self?.errorMessage = "Art-Net output: \(message)"
                 self?.stopOutput()
             }
+        }
+        usbOutput.onError = { [weak self] message in
+            Task { @MainActor in self?.errorMessage = message; self?.stopOutput() }
         }
         if startTimer {
             timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
@@ -437,6 +444,10 @@ import UniformTypeIdentifiers
         if outputEnabled {
             do {
                 try project.validate()
+                if activeTransport != (project.outputTransport ?? .artNet) || (activeTransport == .openDMX && activeUSBDevice != (project.usbDevice ?? "")) {
+                    stopOutput(); errorMessage = "Output selection changed. Start output to connect the selected device."; return
+                }
+                if activeTransport == .openDMX { usbOutput.send(frame:frame); return }
                 if connectedDestination != project.destination {
                     output.finish(universe: lastOutputUniverse)
                     output.start(destination: project.destination)
@@ -552,16 +563,23 @@ import UniformTypeIdentifiers
         }
         return values
     }
+    func refreshUSBDevices() { usbDevices = OpenDMXOutput.devices() }
     func startOutput() {
         do {
             try project.validate()
             connectedDestination = project.destination
             lastOutputUniverse = project.universe
-            output.start(destination: project.destination)
+            activeTransport = project.outputTransport ?? .artNet
+            if activeTransport == .openDMX {
+                activeUSBDevice = project.usbDevice ?? ""
+                try usbOutput.start(path:activeUSBDevice)
+                usbOutput.send(frame:frame)
+            } else { output.start(destination: project.destination) }
             outputEnabled = true
         } catch { errorMessage = error.localizedDescription }
     }
     func stopOutput() {
+        usbOutput.stop()
         // UDP delivery remains best-effort; allow the final packet to drain.
         if outputEnabled { output.finish(universe: lastOutputUniverse) }
         else { output.stop() }
