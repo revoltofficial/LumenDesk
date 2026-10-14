@@ -103,3 +103,5 @@ The bottom-left transport contains tempo and experimental microphone Autopilot c
 See [DIRECTOR.md](DIRECTOR.md) for the AYRA/N-GEAR rig template, fixture roles, phrase choreography and Save this look.
 
 Smooth movement: see [MOVEMENT.md](MOVEMENT.md) for shared preview/output motion limits and current-position feedback.
+
+Movement library, saved favourites and schematic laser animations: see [MOVEMENT-LIBRARY.md](MOVEMENT-LIBRARY.md).

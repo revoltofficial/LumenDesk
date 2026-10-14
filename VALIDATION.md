@@ -1,6 +1,6 @@
 # Validation record
 
-Date: 14 October 2026. Current status: Apple Silicon executable built, 75 tests passed and native interface checked; real audio capture and hardware output untested. The initial table below records the earlier local compiler blocker.
+Date: 14 October 2026. Current status: Apple Silicon executable built, 84 tests passed and native interface checked; real audio capture and hardware output untested. The initial table below records the earlier local compiler blocker.
 
 | Check | Result |
 |---|---|
@@ -116,3 +116,14 @@ The downloaded arm64 app was packaged as LumenDesk Motion with a distinct execut
 These checks verify software motion and native controls, not real motors. Physical travel and 8-bit DMX quantization remain hardware test items. Changing inversion while output is live can flip commands; calibration should be performed with output off. This delivery adds motion stability, not a new movement library or trained song recognition. See MOVEMENT.md.
 
 Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38529027105
+
+
+## Bundled movement library and laser preview — 2026-10-14
+
+Build 38533079227 compiled c3b2049f9411bc2cae79ce7156dee8b5efdfdd69 and passed all 84 tests. Nine additional tests cover bounded loop-continuous paths, direction/phase and coordination, independent axis sizes, head-only phase distribution, saved/favourite round trips and recall identity, invalid presets/settings, long beat cycles, laser Off/unknown slots, all six scan geometries, Static versus Dynamic behavior, Sound/Automatic previews, Master/Blackout and rendering without DMX mutation. Release packaging passed. The sample show has five fixtures, 45 non-overlapping channels and eleven saved movement presets with playback off.
+
+Native checks on the initial batch build confirmed all twelve built-in cards and eleven saved movements, Spiral selection enabling the effect, and Save movement adding My movement with a success message. Automatic laser mode displayed a coloured trace in both the stage and laser panel. A screenshot revealed the taller Design panel overlapping its toolbar/footer. The final build wraps Design controls in a clipped scrolling area. The downloaded arm64 delivery was packaged as LumenDesk Studio, ad-hoc re-signed and strictly verified. The final five-fixture sample opened; a screenshot of the laser panel confirmed the overlap was fixed and the transport remained separate. Final laser mode, audio and physical output are Off.
+
+Laser geometry is schematic. Sound/Automatic timing is illustrative, colour segment is not modeled, and unknown pattern slots have no geometry. No actual laser projection, moving-head motor response, microphone/system-audio capture or physical DMX output was tested. Native favourite filtering and every parameter control were not individually exercised; saved data, coordination and parameter behavior are covered by automated tests. The app source remains original; no third-party music-recognition model has been added.
+
+Build: https://github.com/revoltofficial/LumenDesk/actions/runs/38533079227

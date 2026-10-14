@@ -12,9 +12,10 @@ The delivered director also includes microphone/computer-audio input, the five-f
 
 The shared motion controller now runs once per engine tick and drives both preview and DMX positions. It tracks position and velocity, enforces adjustable degree-based speed and acceleration limits, stays within profile travel, and follows absolute pan/tilt without modulo-360 shortcuts. Reads do not advance movement, and Stop parks the controlled pose. Saved shows retain motion settings; older shows use defaults. See MOVEMENT.md for timing, hard-limit behavior and hardware limitations.
 
-## Then: movement library
+## Implemented: movement library and laser previews
 
-Extend the existing Circle, Figure eight, Sweep and Custom paths with fans, waves, spirals, crosses and reproducible smooth wandering. Provide path previews, direction, phase, size, speed, spread and saved favourites. Keep saved show compatibility and support seconds or beat timing. Movement stability comes first so choosing a preset does not cause a jump.
+The library now includes twelve built-in paths, visual previews, direction, phase, independent pan/tilt sizes, coordination, favourite filtering, saved custom presets and beat cycles through 64 beats. Laser controls and stage view have schematic animations for the six confirmed scans and named colours, with illustrative Sound/Automatic timing. See MOVEMENT-LIBRARY.md. Real optical geometry and motor response remain hardware test items.
+
 
 ## Show Creator: prepared songs
 
